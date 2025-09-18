@@ -1,0 +1,147 @@
+/* Body */
+body {
+    background-color: #f4f6f9;
+    font-family: "Inter", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    color: #343a40;
+}
+
+/* Sidebar */
+#sidebarMenu {
+    width: 250px;
+    transition: all 0.3s ease;
+}
+
+#sidebarMenu .nav-link {
+    color: #adb5bd;
+    font-weight: 500;
+    border-radius: 8px;
+    padding: 10px 15px;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    transition: background-color 0.2s, color 0.2s, transform 0.2s;
+}
+
+#sidebarMenu .nav-link:hover,
+#sidebarMenu .nav-link.active {
+    background-color: #0d6efd;
+    color: #fff;
+    transform: translateX(3px);
+}
+
+/* Icons spacing */
+#sidebarMenu .nav-link i {
+    font-size: 1.2rem;
+}
+
+/* Main Content */
+main {
+    background-color: #f4f6f9;
+    min-height: 100vh;
+}
+
+/* Dashboard Header */
+main h2.fw-bold {
+    font-size: 1.9rem;
+    color: #343a40;
+}
+
+/* Cards */
+.card {
+    border-radius: 14px;
+    overflow: hidden;
+    border: none;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* Card Header */
+.card-header {
+    font-size: 1.15rem;
+    letter-spacing: 0.5px;
+    padding: 0.85rem 1.25rem;
+}
+
+/* Tables */
+.table {
+    margin-bottom: 0;
+    font-size: 0.95rem;
+    border-collapse: separate;
+    border-spacing: 0 0.5rem;
+}
+
+.table th {
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.table td {
+    vertical-align: middle;
+    background-color: #fff;
+    border-top: none;
+    border-radius: 8px;
+}
+
+.table-hover tbody tr:hover td {
+    background-color: #e9ecef;
+    transition: background-color 0.2s ease;
+}
+
+/* Badges */
+.badge {
+    font-size: 0.85rem;
+    padding: 0.5em 0.9em;
+    border-radius: 20px;
+    font-weight: 500;
+}
+
+/* Buttons */
+.btn {
+    border-radius: 8px;
+    font-weight: 500;
+    padding: 0.55rem 1.2rem;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+.btn-primary {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+    color: #fff;
+}
+
+.btn-primary:hover {
+    background-color: #0b5ed7;
+    border-color: #0a58ca;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+}
+
+/* Responsive tweaks */
+@media (max-width: 768px) {
+    #sidebarMenu {
+        width: 200px;
+    }
+    main {
+        margin-left: 200px !important;
+        padding: 1rem;
+    }
+    main h2.fw-bold {
+        font-size: 1.6rem;
+    }
+    .table th,
+    .table td {
+        font-size: 0.85rem;
+    }
+    .btn {
+        font-size: 0.9rem;
+        padding: 0.45rem 1rem;
+    }
+}
