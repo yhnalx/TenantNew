@@ -13,12 +13,23 @@ return new class extends Migration
     {
         Schema::create('payments', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade'); // tenant
-            $table->string('type'); // rent, utilities, etc.
-            $table->decimal('amount', 10, 2);
-            $table->date('payment_date');
+
+            // Relationships
+            $table->foreignId('tenant_id')
+                ->constrained('users') // 👈 reference users table instead of tenants
+                ->onDelete('cascade');
+
+            $table->foreignId('lease_id')->constrained()->onDelete('cascade');
+
+            // Payment details
+            $table->date('pay_date');
+            $table->decimal('pay_amount', 10, 2);
+            $table->string('pay_method'); // Cash, Bank Transfer, etc.
+            $table->string('pay_status'); // Paid, Pending, Overdue
+
             $table->timestamps();
         });
+
     }
 
     /**

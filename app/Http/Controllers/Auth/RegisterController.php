@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Auth;
 
 class RegisterController extends Controller
 {
@@ -20,30 +19,34 @@ class RegisterController extends Controller
         // Validate user input
         $request->validate([
             'name'     => 'required|string|max:255',
-            'email'    => 'required|email|unique:users,email',
-            'password' => 'required|string|min:6|confirmed',
-            'role'     => 'in:tenant,manager' // optional dropdown or hidden field
+            'email'    => [
+                'required',
+                'regex:/^[a-zA-Z0-9]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/',
+                'unique:users,email'
+            ],
+            'contact'  => ['required', 'regex:/^[0-9]{10,15}$/'],
+            'password' => [
+                'required',
+                'string',
+                'min:8',
+                'confirmed',
+                'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).+$/'
+            ],
         ]);
 
-        // Create user (default to tenant if role not provided)
-        $user = User::create([
+
+        // Create user - always tenant by default
+        User::create([
             'name'     => $request->name,
             'email'    => $request->email,
+            'contact_number' => $request->contact,
             'password' => Hash::make($request->password),
-            'role'     => $request->role ?? 'tenant',
-            'status'   => $request->role === 'tenant' ? 'pending' : 'approved'
+            'role'     => 'tenant',   // default role
+            'status'   => 'pending',  // default status
         ]);
 
-        // Auto-login after registration
-        Auth::login($user);
-
-        // Redirect based on role
-        if ($user->role === 'manager') {
-            return redirect()->route('manager.dashboard')
-                ->with('success', 'Manager account created successfully!');
-        }
-
-        return redirect()->route('tenant.home')
-            ->with('success', 'Tenant account created successfully! Please wait for approval.');
+        // Redirect to login (no auto-login)
+        return redirect()->route('login')
+            ->with('success', 'Tenant account created successfully! Please wait for manager approval before logging in.');
     }
 }

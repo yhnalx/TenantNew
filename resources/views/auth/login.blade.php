@@ -26,7 +26,10 @@
 
             <div class="mb-3">
                 <label for="email" class="form-label">Email</label>
-                <input type="email" name="email" class="form-control" required autofocus>
+                <input type="email" name="email" class="form-control"
+                    required autofocus
+                    pattern="[a-zA-Z0-9]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+                    title="Only letters/numbers before @, valid domain after @">
             </div>
 
             <div class="mb-3">

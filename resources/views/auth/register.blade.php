@@ -30,12 +30,27 @@
 
             <div class="mb-3">
                 <label class="form-label">Email</label>
-                <input type="email" name="email" value="{{ old('email') }}" class="form-control" required>
+                <input type="email" name="email" value="{{ old('email') }}" 
+                    class="form-control" required
+                    pattern="[a-zA-Z0-9]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+                    title="Only letters/numbers before @, valid domain after @">
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Contact Number</label>
+                <input type="text" name="contact" class="form-control" 
+                    required maxlength="15" minlength="10"
+                    pattern="^[0-9]{10,15}$"
+                    title="Contact must be 10–15 digits only"
+                    oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+
             </div>
 
             <div class="mb-3">
                 <label class="form-label">Password</label>
-                <input type="password" name="password" class="form-control" required>
+                <input type="password" name="password" class="form-control" required
+                    pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$"
+                    title="At least 8 characters, with uppercase, lowercase, number & special character">
             </div>
 
             <div class="mb-3">

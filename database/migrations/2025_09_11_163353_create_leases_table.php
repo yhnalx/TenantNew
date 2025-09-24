@@ -13,15 +13,25 @@ return new class extends Migration
     {
         Schema::create('leases', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->string('room_number');
-            $table->date('lease_start');
-            $table->date('lease_end');
+
+            // Relationships
+            $table->foreignId('tenant_id')->constrained('users')->onDelete('cascade'); 
+            $table->foreignId('property_id')->constrained()->onDelete('cascade');
+
+            // Lease details
+            $table->string('room_number')->nullable(); // in case property has rooms
+            $table->date('lea_start_date');
+            $table->date('lea_end_date');
+            $table->string('lea_status')->default('active'); // active, ended
+            $table->string('lea_terms')->nullable();
+
+            // Renewal request
             $table->boolean('renewal_requested')->default(false);
+
             $table->timestamps();
         });
-
     }
+
 
     /**
      * Reverse the migrations.
