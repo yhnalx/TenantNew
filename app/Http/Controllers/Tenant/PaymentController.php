@@ -9,6 +9,15 @@ use Illuminate\Support\Facades\Auth;
 
 class PaymentController extends Controller
 {
+    public function index()
+    {
+        // ✅ Get only the current tenant's payments, newest first
+        $payments = Payment::where('tenant_id', Auth::id())
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('tenant.payments', compact('payments'));
+    }
 
     public function store(Request $request)
     {
@@ -29,7 +38,7 @@ class PaymentController extends Controller
 
         Payment::create([
             'tenant_id'   => Auth::id(),
-            'lease_id'    => $lease?->id,   // ✅ will store null if no lease exists
+            'lease_id'    => $lease?->id,
             'pay_date'    => now(),
             'pay_amount'  => $request->pay_amount,
             'pay_method'  => $request->pay_method,
@@ -39,7 +48,7 @@ class PaymentController extends Controller
             'account_no'  => $request->account_no,
         ]);
 
-
-        return redirect()->route('tenant.payments')->with('success', 'Payment submitted successfully!');
+        return redirect()->route('tenant.payments')
+            ->with('success', 'Payment submitted successfully!');
     }
 }

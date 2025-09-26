@@ -50,6 +50,19 @@ class User extends Authenticatable
         return $this->hasMany(Property::class, 'manager_id');
     }
 
+    // 🔗 Tenant payments
+    public function payments()
+    {
+        return $this->hasMany(Payment::class, 'user_id');
+    }
+
+    // 🔗 Tenant maintenance requests
+    public function maintenanceRequests()
+    {
+        return $this->hasMany(MaintenanceRequest::class, 'user_id');
+    }
+
+
     // 🔗 Tenant Application (one-to-one)
     public function tenantApplication()
     {

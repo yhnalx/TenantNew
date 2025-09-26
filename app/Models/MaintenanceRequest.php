@@ -1,8 +1,7 @@
 <?php
 
-use App\Models\Lease;
-use App\Models\Property;
-use App\Models\User;
+namespace App\Models;
+
 use Illuminate\Database\Eloquent\Model;
 
 class MaintenanceRequest extends Model

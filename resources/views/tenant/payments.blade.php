@@ -19,42 +19,46 @@
         @if($payments->isEmpty())
             <p>No payments found.</p>
         @else
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>For</th>
-                        <th>Type</th>
-                        <th>Amount</th>
-                        <th>Account No.</th>
-                        <th>Status</th>
-                        <th>Proof</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($payments as $payment)
+            <div class="table-responsive">
+                <table class="table table-striped table-hover align-middle">
+                    <thead>
                         <tr>
+                            <th>#</th>
+                            <th>Date</th>
+                            <th>Payment For</th>
+                            <th>Method</th>
+                            <th>Amount</th>
+                            <th>Account No</th>
+                            <th>Status</th>
+                            <th>Proof</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($payments as $payment)
+                        <tr>
+                            <td>{{ $loop->iteration }}</td>
                             <td>{{ \Carbon\Carbon::parse($payment->pay_date ?? $payment->created_at)->format('M d, Y') }}</td>
                             <td>{{ $payment->payment_for ?? '-' }}</td>
                             <td>{{ ucfirst($payment->pay_method) }}</td>
                             <td>₱{{ number_format($payment->pay_amount, 2) }}</td>
                             <td>{{ $payment->account_no ?? '-' }}</td>
                             <td>
-                                <span class="badge bg-{{ $payment->pay_status === 'Paid' ? 'success' : 'warning' }}">
+                                <span class="badge bg-{{ $payment->pay_status === 'Paid' ? 'success' : 'warning text-dark' }}">
                                     {{ $payment->pay_status }}
                                 </span>
                             </td>
                             <td>
                                 @if($payment->proof)
-                                    <a href="{{ asset('storage/'.$payment->proof) }}" target="_blank">View</a>
+                                    <a href="{{ asset('storage/'.$payment->proof) }}" target="_blank" class="btn btn-sm btn-outline-info">View</a>
                                 @else
                                     -
                                 @endif
                             </td>
                         </tr>
-                    @endforeach
-                </tbody>
-            </table>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         @endif
     </div>
 </div>
@@ -69,19 +73,6 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                
-                <!-- Payment Method -->
-                <div class="mb-3">
-                    <label class="form-label">Payment Method</label>
-                    <select name="pay_method" id="payment_method" class="form-select" required>
-                        <option value="">Select Method</option>
-                        <option value="Cash">Cash</option>
-                        <option value="GCash">GCash</option>
-                        <option value="Bank Transfer">Bank Transfer</option>
-                    </select>
-                </div>
-
-
                 <!-- Payment For -->
                 <div class="mb-3">
                     <label class="form-label">Payment For</label>
@@ -100,7 +91,18 @@
                     <input type="number" name="pay_amount" class="form-control" value="2500" required>
                 </div>
 
-                <!-- Extra Field for Online Payments -->
+                <!-- Payment Method -->
+                <div class="mb-3">
+                    <label class="form-label">Payment Method</label>
+                    <select name="pay_method" id="payment_method" class="form-select" required>
+                        <option value="">Select Method</option>
+                        <option value="Cash">Cash</option>
+                        <option value="GCash">GCash</option>
+                        <option value="Bank Transfer">Bank Transfer</option>
+                    </select>
+                </div>
+
+                <!-- Account Number for online payments -->
                 <div class="mb-3 d-none" id="accountNumberField">
                     <label class="form-label">Account / GCash Number</label>
                     <input type="text" name="account_no" class="form-control">
@@ -111,7 +113,6 @@
                     <label class="form-label">Proof of Payment (Screenshot / Receipt)</label>
                     <input type="file" name="proof" class="form-control" accept="image/*">
                 </div>
-
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -121,10 +122,10 @@
     </div>
 </div>
 
-<!-- Script to toggle Account Number -->
+<!-- Toggle Account Number Field -->
 <script>
     document.getElementById('payment_method').addEventListener('change', function() {
-        let accountField = document.getElementById('accountNumberField');
+        const accountField = document.getElementById('accountNumberField');
         if (this.value === 'GCash' || this.value === 'Bank Transfer') {
             accountField.classList.remove('d-none');
         } else {
