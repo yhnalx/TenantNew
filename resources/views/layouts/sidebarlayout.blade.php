@@ -21,10 +21,11 @@
                 <i class="bi bi-people-fill me-2"></i> Tenants
             </a>
         </li>
-        <li class="nav-item mt-4">
-            <a class="nav-link text-danger" href="#">
-                <i class="bi bi-box-arrow-right me-2"></i> Logout
-            </a>
-        </li>
+            <form action="{{ route('logout') }}" method="POST">
+                    @csrf
+                    <button class="btn btn-danger w-100">
+                        <i class="bi bi-box-arrow-right me-2"></i> Logout
+                    </button>
+            </form>
     </ul>
 </nav>

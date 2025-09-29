@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Tenant;
 
 use App\Http\Controllers\Controller;
+use App\Models\MaintenanceRequest;
 use Illuminate\Http\Request;
 use App\Models\Payment;
 use App\Models\TenantApplication;
@@ -85,15 +86,11 @@ class TenantController extends Controller
         $tenantApplication = TenantApplication::where('user_id', $user->id)->first();
         $showApplicationModal = !$tenantApplication || !$tenantApplication->is_complete;
 
-        // Dummy payments and requests (replace with real queries later)
-        $payments = collect([
-            (object)['pay_date' => '2025-09-01','type' => 'rent','amount' => 5000],
-            (object)['pay_date' => '2025-09-15','type' => 'utilities','amount' => 1200],
-        ]);
+        // Fetch tenant payments from DB
+        $payments = Payment::where('tenant_id', $user->id)->get();
 
-        $requests = collect([
-            (object)['request_date' => '2025-09-05','status' => 'pending','description' => 'Leaky faucet'],
-        ]);
+        // Fetch tenant requests from DB
+        $requests = MaintenanceRequest::where('tenant_id', $user->id)->get();
 
         return view('tenant.home', compact('payments', 'requests', 'showApplicationModal'));
     }

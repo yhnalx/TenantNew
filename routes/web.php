@@ -3,12 +3,13 @@
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Manager\DashboardController;
-
+use App\Http\Controllers\Manager\MaintenanceRequestController;
 use App\Http\Controllers\Manager\ManagerController;
 use App\Http\Controllers\Manager\ReportsController;
 use App\Http\Controllers\Tenant\PaymentController as TenantPaymentController;
 use App\Http\Controllers\Tenant\TenantController;
 use App\Http\Controllers\Tenant\TenantApplicationController;
+use App\Http\Controllers\Tenant\TenantRequestController;
 use Illuminate\Support\Facades\Route;
 
 // Default route
@@ -46,6 +47,17 @@ Route::middleware(['auth', 'manager'])->group(function () {
     // Reports
     Route::get('/manager/reports', [ReportsController::class, 'index'])->name('manager.reports');
     Route::get('/manager/reports/{report}', [ReportsController::class, 'show'])->name('manager.reports.show');
+    Route::get('manager/reports/{report}/export', [ReportsController::class, 'export'])
+    ->name('manager.reports.export');
+    Route::patch('/manager/payments/{payment}/status', [ReportsController::class, 'updatePaymentStatus'])
+    ->name('manager.payments.updateStatus');
+
+    // Requests
+    Route::patch('/manager/requests/{id}/status', [App\Http\Controllers\Manager\MaintenanceRequestController::class, 'updateStatus'])
+    ->name('manager.requests.updateStatus');
+    Route::get('/manager/requests/{id}', [App\Http\Controllers\Manager\MaintenanceRequestController::class, 'show'])
+        ->name('manager.requests.show');
+
 
     // Tenant approval actions
     Route::post('/manager/approve/{id}', [ManagerController::class, 'approve'])->name('manager.approve');
@@ -77,6 +89,11 @@ Route::middleware(['auth'])->group(function () {
     // Tenant make payment
     Route::post('/tenant/payments/store', [TenantPaymentController::class, 'store'])
         ->name('tenant.payments.store');
+
+    Route::get('/tenant/requests', [TenantRequestController::class, 'index'])
+        ->name('tenant.requests');
+    Route::post('/tenant/requests/store', [TenantRequestController::class, 'store'])
+        ->name('tenant.requests.store');
 
 });
 

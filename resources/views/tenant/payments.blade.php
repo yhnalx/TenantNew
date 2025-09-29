@@ -23,7 +23,7 @@
                 <table class="table table-striped table-hover align-middle">
                     <thead>
                         <tr>
-                            <th>#</th>
+                            <th></th>
                             <th>Date</th>
                             <th>Payment For</th>
                             <th>Method</th>
@@ -43,7 +43,7 @@
                             <td>₱{{ number_format($payment->pay_amount, 2) }}</td>
                             <td>{{ $payment->account_no ?? '-' }}</td>
                             <td>
-                                <span class="badge bg-{{ $payment->pay_status === 'Paid' ? 'success' : 'warning text-dark' }}">
+                                <span class="badge bg-{{ $payment->pay_status === 'Accepted' ? 'success' : 'warning text-dark' }}">
                                     {{ $payment->pay_status }}
                                 </span>
                             </td>

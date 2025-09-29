@@ -4,30 +4,105 @@
 
 @section('content')
 <div class="card mb-4">
-    <div class="card-header bg-light">Maintenance Requests</div>
+    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+        <span>Maintenance Requests</span>
+        <!-- Create Request Button -->
+        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createRequestModal">
+            + Create Request
+        </button>
+    </div>
     <div class="card-body">
+        @if(session('success'))
+            <div class="alert alert-success">{{ session('success') }}</div>
+        @endif
+
         @if($requests->isEmpty())
             <p>No requests found.</p>
         @else
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Type</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($requests as $request)
+            <div class="table-responsive">
+                <table class="table table-striped table-hover align-middle">
+                    <thead>
                         <tr>
-                            <td>{{ \Carbon\Carbon::parse($request->created_at)->format('M d, Y') }}</td>
-                            <td>{{ ucfirst($request->type) }}</td>
-                            <td>{{ ucfirst($request->status) }}</td>
+                            <th></th>
+                            <th>Date Filed</th>
+                            <th>Request</th>
+                            <th>Urgency</th>
+                            <th>Supposed Date</th>
+                            <th>Status</th>
                         </tr>
-                    @endforeach
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @foreach($requests as $request)
+                        <tr>
+                            <td>{{ $loop->iteration }}</td>
+                            <td>{{ \Carbon\Carbon::parse($request->created_at)->format('M d, Y') }}</td>
+                            <td>{{ ucfirst($request->description) }}</td>
+                            <td>
+                                <span class="badge 
+                                    @if($request->urgency === 'high') bg-danger 
+                                    @elseif($request->urgency === 'mid') bg-warning text-dark 
+                                    @else bg-success @endif">
+                                    {{ ucfirst($request->urgency) }}
+                                </span>
+                            </td>
+                            <td>{{ \Carbon\Carbon::parse($request->supposed_date)->format('M d, Y') }}</td>
+                            <td>
+                                <span class="badge 
+                                    @if($request->status === 'Pending') bg-secondary 
+                                    @elseif($request->status === 'Accepted') bg-success 
+                                    @else bg-danger @endif">
+                                    {{ ucfirst($request->status) }}
+                                </span>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         @endif
+    </div>
+</div>
+
+<!-- Create Request Modal -->
+<div class="modal fade" id="createRequestModal" tabindex="-1" aria-labelledby="createRequestModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <form method="POST" action="{{ route('tenant.requests.store') }}" class="modal-content">
+            @csrf
+            <div class="modal-header">
+                <h5 class="modal-title" id="createRequestModalLabel">New Maintenance Request</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <!-- Description -->
+                <div class="mb-3">
+                    <label class="form-label">What request are you asking for?</label>
+                    <textarea name="description" class="form-control" rows="3" required>{{ old('description') }}</textarea>
+                </div>
+
+                <!-- Urgency -->
+                <div class="mb-3">
+                    <label class="form-label">Urgency</label>
+                    <select name="urgency" class="form-select" required>
+                        <option value="" disabled selected>Select urgency</option>
+                        <option value="low" {{ old('urgency') == 'low' ? 'selected' : '' }}>Low</option>
+                        <option value="mid" {{ old('urgency') == 'mid' ? 'selected' : '' }}>Mid</option>
+                        <option value="high" {{ old('urgency') == 'high' ? 'selected' : '' }}>High</option>
+                    </select>
+                </div>
+
+                <!-- Supposed Date -->
+                <div class="mb-3">
+                    <label class="form-label">When should it happen?</label>
+                    <input type="date" name="supposed_date" class="form-control" value="{{ old('supposed_date') }}" required>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-success">Submit Request</button>
+            </div>
+        </form>
     </div>
 </div>
 @endsection

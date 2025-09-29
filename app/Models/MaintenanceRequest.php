@@ -7,8 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 class MaintenanceRequest extends Model
 {
     protected $fillable = [
-        'lease_id', 'tenant_id', 'property_id', 'request_date', 'description', 'status'
+        'tenant_id',
+        'description',
+        'urgency',
+        'supposed_date',
+        'status',
     ];
+
 
     public function lease()
     {
