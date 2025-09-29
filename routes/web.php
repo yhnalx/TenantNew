@@ -11,11 +11,14 @@ use App\Http\Controllers\Tenant\TenantController;
 use App\Http\Controllers\Tenant\TenantApplicationController;
 use App\Http\Controllers\Tenant\TenantRequestController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\LandingController;
 
 // Default route
 Route::get('/', function () {
     return redirect()->route('login');
 });
+
+Route::get('/', [LandingController::class, 'index'])->name('landing');
 
 // -----------------------------
 // Auth routes
