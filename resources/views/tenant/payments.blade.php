@@ -4,6 +4,26 @@
 
 @section('content')
 <div class="card mb-4">
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card text-white bg-warning mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Unpaid Rent - {{ \Carbon\Carbon::now()->format('F Y') }}</h5>
+                    <p class="card-text fs-3">₱{{ number_format($unpaidRent, 2) }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card text-white bg-danger mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Unpaid Utilities - {{ \Carbon\Carbon::now()->format('F Y') }}</h5>
+                    <p class="card-text fs-3">₱{{ number_format($unpaidUtilities, 2) }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
     <div class="card-header bg-light d-flex justify-content-between align-items-center">
         <span>Payment History</span>
         <!-- Make Payment Button -->
@@ -80,7 +100,9 @@
                         <option value="">Select</option>
                         <option value="Rent">Rent</option>
                         <option value="Utilities">Utilities</option>
-                        <option value="Deposit">Deposit</option>
+                        @if (!$depositExists)
+                            <option value="Deposit">Deposit</option>
+                        @endif
                         <option value="Other">Other</option>
                     </select>
                 </div>
@@ -134,3 +156,18 @@
     });
 </script>
 @endsection
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const paymentMethodSelect = document.getElementById('payment_method');
+        const accountField = document.getElementById('accountNumberField');
+
+        paymentMethodSelect.addEventListener('change', function() {
+            if (this.value === 'GCash' || this.value === 'Bank Transfer') {
+                accountField.classList.remove('d-none');
+            } else {
+                accountField.classList.add('d-none');
+            }
+        });
+    });
+</script>

@@ -17,7 +17,7 @@ class ReportsController extends Controller
         $reports = [
             'active-tenants'       => 'Active Tenants',
             'payment-history'      => 'Payment History',
-            'lease-summary'        => 'Lease Information (coming soon)',
+            'lease-summary'        => 'Lease Information',
             'maintenance-requests' => 'Maintenance Requests',
         ];
 
@@ -26,18 +26,38 @@ class ReportsController extends Controller
 
     public function show(Request $request, $report)
     {
-        $total = 0;              // always defined
-        $currentFilter = '';     // always defined
+        $total = 0;
+        $currentFilter = '';
         $data = collect();
         $title = '';
 
         switch ($report) {
             case 'active-tenants':
-                $data = User::with('tenantApplication')
-                    ->where('role', 'tenant')
-                    ->get();
-                $title = "List of Tenants (Leases Coming Soon)";
+                $query = User::with(['tenantApplication', 'leases' => function($q) {
+                    $q->where('lea_status', 'active')->latest('created_at');
+                }])->where('role', 'tenant')->where('status', 'approved');
+
+                // Filter by Unit Type
+                if ($request->filled('unit_type')) {
+                    $query->whereHas('tenantApplication', function($q) use ($request) {
+                        $q->where('unit_type', $request->unit_type);
+                    });
+                }
+
+                // Filter by Employment Status
+                if ($request->filled('employment_status')) {
+                    $query->whereHas('tenantApplication', function($q) use ($request) {
+                        $q->where('employment_status', $request->employment_status);
+                    });
+                }
+
+                $total = $query->count();
+                $data = $query->paginate(10);
+
+                $title = "Active Tenants";
+                $currentFilter = $request->only(['unit_type', 'employment_status']);
                 break;
+
 
             case 'payment-history':
                 $query = Payment::with('tenant');
@@ -49,18 +69,24 @@ class ReportsController extends Controller
 
                 $total = (clone $query)->sum('pay_amount');
                 $data = $query->orderBy('pay_date', 'desc')->paginate(10);
-
                 $title = "Payment History per Tenant";
                 break;
 
             case 'lease-summary':
-                $title = "Lease Summary (Coming Soon)";
+                $query = User::with(['tenantApplication', 'leases' => function($q) {
+                    $q->where('lea_status', 'active')->latest('created_at');
+                }])
+                ->where('role', 'tenant')
+                ->where('status', 'approved');
+
+                $total = $query->count();
+                $data = $query->paginate(10);
+                $title = "List of Active Lease";
                 break;
 
             case 'maintenance-requests':
                 $query = \App\Models\MaintenanceRequest::with('tenant');
 
-                // ✅ Apply filters if provided
                 if ($request->filled('status')) {
                     $query->where('status', $request->status);
                 }
@@ -68,12 +94,8 @@ class ReportsController extends Controller
                     $query->where('urgency', $request->urgency);
                 }
 
-                // ✅ Count total for summary
                 $total = (clone $query)->count();
-
-                // ✅ Paginate data
                 $data = $query->orderBy('created_at', 'desc')->paginate(10);
-
                 $title = "Maintenance Requests";
                 break;
 
@@ -87,9 +109,11 @@ class ReportsController extends Controller
     }
 
 
+
     public function export(Request $request, $report)
     {
         switch ($report) {
+            // ---------------- Payment History ----------------
             case 'payment-history':
                 $query = Payment::with('tenant');
 
@@ -125,10 +149,95 @@ class ReportsController extends Controller
 
                 return $response;
 
+            // ---------------- Tenants Export ----------------
+            case 'active-tenants':
+                $pendingTenants = User::with('tenantApplication')
+                    ->where('role', 'tenant')->where('status', 'pending')->get();
+                $approvedTenants = User::with(['tenantApplication', 'leases' => function($q) {
+                    $q->where('lea_status', 'active')->latest('created_at');
+                }])->where('role', 'tenant')->where('status', 'approved')->get();
+                $rejectedTenants = User::with('tenantApplication')
+                    ->where('role', 'tenant')->where('status', 'rejected')->get();
+
+                $filename = "tenants-export-" . now()->format('Y-m-d_H-i-s') . ".csv";
+
+                $response = new StreamedResponse(function () use ($pendingTenants, $approvedTenants, $rejectedTenants) {
+                    $handle = fopen('php://output', 'w');
+
+                    // Export date
+                    fputcsv($handle, ['Date of Export', now()->format('Y-m-d H:i:s')]);
+                    fputcsv($handle, []);
+
+                    // --- Pending Tenants ---
+                    fputcsv($handle, ['Pending Tenants']);
+                    fputcsv($handle, ['Full Name','Email','Contact Number','Unit Type','Employment Status','Source of Income','Emergency Name','Emergency Number']);
+                    foreach ($pendingTenants as $tenant) {
+                        $app = $tenant->tenantApplication;
+                        fputcsv($handle, [
+                            $tenant->name,
+                            $tenant->email,
+                            $app->contact_number ?? 'N/A',
+                            $app->unit_type ?? 'N/A',
+                            $app->employment_status ?? 'N/A',
+                            $app->source_of_income ?? 'N/A',
+                            $app->emergency_name ?? 'N/A',
+                            $app->emergency_number ?? 'N/A',
+                        ]);
+                    }
+                    fputcsv($handle, []);
+
+                    // --- Approved Tenants ---
+                    fputcsv($handle, ['Approved Tenants']);
+                    fputcsv($handle, ['Full Name','Email','Contact Number','Unit Type','Employment Status','Source of Income','Emergency Name','Emergency Number','Lease Start','Lease End']);
+                    foreach ($approvedTenants as $tenant) {
+                        $app = $tenant->tenantApplication;
+                        $lease = $tenant->leases->first(); // latest active lease
+                        fputcsv($handle, [
+                            $tenant->name,
+                            $tenant->email,
+                            $app->contact_number ?? 'N/A',
+                            $app->unit_type ?? 'N/A',
+                            $app->employment_status ?? 'N/A',
+                            $app->source_of_income ?? 'N/A',
+                            $app->emergency_name ?? 'N/A',
+                            $app->emergency_number ?? 'N/A',
+                            $lease?->lea_start_date ?? 'N/A',
+                            $lease?->lea_end_date ?? 'N/A',
+                        ]);
+                    }
+                    fputcsv($handle, []);
+
+                    // --- Rejected Tenants ---
+                    fputcsv($handle, ['Rejected Tenants']);
+                    fputcsv($handle, ['Full Name','Email','Contact Number','Unit Type','Employment Status','Source of Income','Emergency Name','Emergency Number','Rejection Reason']);
+                    foreach ($rejectedTenants as $tenant) {
+                        $app = $tenant->tenantApplication;
+                        fputcsv($handle, [
+                            $tenant->name,
+                            $tenant->email,
+                            $app->contact_number ?? 'N/A',
+                            $app->unit_type ?? 'N/A',
+                            $app->employment_status ?? 'N/A',
+                            $app->source_of_income ?? 'N/A',
+                            $app->emergency_name ?? 'N/A',
+                            $app->emergency_number ?? 'N/A',
+                            $tenant->rejection_reason ?? 'N/A',
+                        ]);
+                    }
+
+                    fclose($handle);
+                });
+
+                $response->headers->set('Content-Type', 'text/csv');
+                $response->headers->set('Content-Disposition', "attachment; filename={$filename}");
+
+                return $response;
+
             default:
                 abort(404, 'Export not available for this report.');
         }
     }
+
 
     public function updatePaymentStatus(Request $request, Payment $payment)
     {

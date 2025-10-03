@@ -8,15 +8,15 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('payments', function (Blueprint $table) {
-            $table->string('account_number')->nullable()->after('payment_for'); // for online banking
+        Schema::table('tenant_applications', function (Blueprint $table) {
+            $table->string('source_of_income')->after('employer_school')->nullable();
         });
     }
 
     public function down(): void
     {
-        Schema::table('payments', function (Blueprint $table) {
-            $table->dropColumn(['account_number']);
+        Schema::table('tenant_applications', function (Blueprint $table) {
+            $table->dropColumn('source_of_income');
         });
     }
 };

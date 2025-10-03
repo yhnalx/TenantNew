@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Lease extends Model
 {
@@ -11,24 +11,36 @@ class Lease extends Model
 
     protected $fillable = [
         'user_id',
-        'property_id',
-        'room_number',
-        'lease_start_date',
-        'lease_end_date',
-        'lease_status',
-        'lease_terms',
-        'renewal_requested',
+        'unit_id',
+        'lea_start_date',
+        'lea_end_date',
+        'lea_status',
+        'room_no',
+        'terms',
     ];
 
-    // 🔗 Lease belongs to a tenant (User with role = tenant)
+
+    // Lease belongs to a tenant
     public function tenant()
     {
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    // 🔗 Lease belongs to a property
-    public function property()
+    // Lease belongs to a unit
+    public function unit()
     {
-        return $this->belongsTo(Property::class);
+        return $this->belongsTo(Unit::class, 'unit_id');
+    }
+
+    // Lease can have many payments
+    public function payments()
+    {
+        return $this->hasMany(Payment::class, 'lease_id');
+    }
+
+    // Lease can have many maintenance requests
+    public function maintenanceRequests()
+    {
+        return $this->hasMany(MaintenanceRequest::class, 'tenant_id', 'user_id');
     }
 }

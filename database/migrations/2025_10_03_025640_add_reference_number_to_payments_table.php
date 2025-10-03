@@ -9,14 +9,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('payments', function (Blueprint $table) {
-            $table->string('account_number')->nullable()->after('payment_for'); // for online banking
+            $table->string('reference_number')->unique()->after('id');
         });
     }
 
     public function down(): void
     {
         Schema::table('payments', function (Blueprint $table) {
-            $table->dropColumn(['account_number']);
+            $table->dropColumn('reference_number');
         });
     }
 };

@@ -19,6 +19,14 @@ return new class extends Migration
             $table->string('role')->default('tenant'); // tenant or manager
             $table->string('status')->default('pending'); // pending, approved, rejected
             $table->string('contact_number')->nullable();
+            
+            // Tenant financial info
+            $table->decimal('rent_amount', 10, 2)->default(0);      // Monthly rent
+            $table->decimal('utility_amount', 10, 2)->default(0);   // Monthly utilities
+            $table->decimal('deposit_amount', 10, 2)->default(0);   // Total deposit required
+            $table->decimal('rent_balance', 10, 2)->default(0);     // Unpaid rent balance
+            $table->decimal('utility_balance', 10, 2)->default(0);  // Unpaid utility balance
+
             $table->rememberToken();
             $table->timestamps();
         });

@@ -21,11 +21,18 @@
                 <i class="bi bi-people-fill me-2"></i> Tenants
             </a>
         </li>
+        <li class="nav-item mb-2">
+            <a class="nav-link {{ request()->routeIs('manager.units.*') ? 'active' : '' }}" href="{{ route('manager.units.index') }}">
+                <i class="bi bi-building-fill-add me-2"></i> Units
+            </a>
+        </li>
+        <li class="nav-item mt-3">
             <form action="{{ route('logout') }}" method="POST">
-                    @csrf
-                    <button class="btn btn-danger w-100">
-                        <i class="bi bi-box-arrow-right me-2"></i> Logout
-                    </button>
+                @csrf
+                <button class="btn btn-danger w-100">
+                    <i class="bi bi-box-arrow-right me-2"></i> Logout
+                </button>
             </form>
+        </li>
     </ul>
 </nav>

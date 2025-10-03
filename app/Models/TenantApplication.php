@@ -21,14 +21,15 @@ class TenantApplication extends Model
         'reason',
         'employment_status',
         'employer_school',
+        'source_of_income',
         'emergency_name',
         'emergency_number',
         'emergency_relationship',
         'valid_id_path',
         'id_picture_path',
-        'is_complete',
     ];
 
+    // Relationship to User
     public function user()
     {
         return $this->belongsTo(User::class);

@@ -5,79 +5,92 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\DB;
 
 class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     */
     protected $fillable = [
         'name',
         'email',
         'password',
-        'role',           // tenant | manager
-        'status',         // pending | approved | rejected
+        'role',            // tenant | manager
+        'status',          // pending | approved | rejected
         'contact_number',
+        'rejection_reason',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * The attributes that should be cast.
-     */
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
 
-    // 🔗 A user can have many leases (if tenant)
+    // 🔗 Relationships
     public function leases()
     {
-        return $this->hasMany(Lease::class);
+        return $this->hasMany(Lease::class, 'user_id');
     }
 
-    // 🔗 If user is a manager, they can manage many properties
     public function properties()
     {
         return $this->hasMany(Property::class, 'manager_id');
     }
 
-    // 🔗 Tenant payments
     public function payments()
     {
-        return $this->hasMany(Payment::class, 'user_id');
+        return $this->hasMany(Payment::class, 'tenant_id');
     }
 
-    // 🔗 Tenant maintenance requests
     public function maintenanceRequests()
     {
-        return $this->hasMany(MaintenanceRequest::class, 'user_id');
+        return $this->hasMany(MaintenanceRequest::class, 'tenant_id');
     }
 
-
-    // 🔗 Tenant Application (one-to-one)
     public function tenantApplication()
     {
-        return $this->hasOne(TenantApplication::class);
+        return $this->hasOne(TenantApplication::class, 'user_id');
     }
 
-    public function hasCompletedTenantApplication()
+    public function hasCompletedTenantApplication(): bool
     {
         $app = $this->tenantApplication;
-        return $app && $app->completed; // make sure 'completed' column exists in tenant_applications
+        return $app && $app->completed;
     }
 
-    // ⚡ Helper: check if tenant is approved
     public function isApprovedTenant(): bool
     {
         return $this->role === 'tenant' && $this->status === 'approved';
+    }
+
+    // ⚡ Helpers for payments
+
+    // Total paid for a specific type (Rent, Utilities, Deposit)
+    public function totalPaid(string $paymentFor): float
+    {
+        return (float) $this->payments()
+            ->where('payment_for', $paymentFor)
+            ->where('pay_status', 'Paid')
+            ->sum('pay_amount');
+    }
+
+    // Remaining balance for rent or utilities
+    public function unpaidBalance(string $paymentFor, float $expectedAmount): float
+    {
+        return max(0, $expectedAmount - $this->totalPaid($paymentFor));
+    }
+
+    // Check if deposit is paid
+    public function depositPaid(): bool
+    {
+        return $this->payments()
+            ->where('payment_for', 'Deposit')
+            ->where('pay_status', 'Paid')
+            ->exists();
     }
 }

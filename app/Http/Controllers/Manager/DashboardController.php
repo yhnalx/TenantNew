@@ -10,28 +10,51 @@ class DashboardController extends Controller
 {
     // Manager Overview
     public function dashboard()
-{
-    $totalUnits = 50; // hardcoded
-    $occupiedUnits = User::where('role', 'tenant')->where('status', 'approved')->count();
-    $vacantUnits = $totalUnits - $occupiedUnits;
-    $pendingApplications = User::where('role', 'tenant')->where('status', 'pending')->count();
-    $approvedTenants = $occupiedUnits;
-    $rejectedTenants = User::where('role', 'tenant')->where('status', 'rejected')->count();
+    {
+        // Total units dynamically from the database
+        $totalUnits = \App\Models\Unit::count();
 
-    $pendingTenants = User::where('role', 'tenant')->where('status', 'pending')->get();
-    $approvedTenantList = User::where('role', 'tenant')->where('status', 'approved')->get();
+        // Occupied units (status = 'occupied')
+        $occupiedUnits = \App\Models\Unit::where('status', 'occupied')->count();
 
-    return view('manager.dashboard', compact(
-        'totalUnits',
-        'occupiedUnits',
-        'vacantUnits',
-        'pendingApplications',
-        'approvedTenants',
-        'rejectedTenants',
-        'pendingTenants',
-        'approvedTenantList'
-    ));
-}
+        // Vacant units
+        $vacantUnits = $totalUnits - $occupiedUnits;
+
+        // Pending applications (users with tenant role and pending status)
+        $pendingApplications = \App\Models\User::where('role', 'tenant')
+                                    ->where('status', 'pending')
+                                    ->count();
+
+        // Approved tenants
+        $approvedTenants = \App\Models\User::where('role', 'tenant')
+                                ->where('status', 'approved')
+                                ->count();
+
+        // Rejected tenants
+        $rejectedTenants = \App\Models\User::where('role', 'tenant')
+                                ->where('status', 'rejected')
+                                ->count();
+
+        // Optional detailed lists
+        $pendingTenants = \App\Models\User::where('role', 'tenant')
+                                ->where('status', 'pending')->get();
+
+        $approvedTenantList = \App\Models\User::where('role', 'tenant')
+                                    ->where('status', 'approved')->get();
+
+        return view('manager.dashboard', compact(
+            'totalUnits',
+            'occupiedUnits',
+            'vacantUnits',
+            'pendingApplications',
+            'approvedTenants',
+            'rejectedTenants',
+            'pendingTenants',
+            'approvedTenantList'
+        ));
+    }
+
+
 
 
     // Other pages

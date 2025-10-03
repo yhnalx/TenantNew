@@ -25,6 +25,8 @@
                         <tr>
                             <th></th>
                             <th>Date Filed</th>
+                            <th>Unit Type</th>
+                            <th>Room No</th>
                             <th>Request</th>
                             <th>Urgency</th>
                             <th>Supposed Date</th>
@@ -36,6 +38,8 @@
                         <tr>
                             <td>{{ $loop->iteration }}</td>
                             <td>{{ \Carbon\Carbon::parse($request->created_at)->format('M d, Y') }}</td>
+                            <td>{{ $request->unit_type ?? '-' }}</td>
+                            <td>{{ $request->room_no ?? '-' }}</td>
                             <td>{{ ucfirst($request->description) }}</td>
                             <td>
                                 <span class="badge 
@@ -74,6 +78,21 @@
             </div>
 
             <div class="modal-body">
+                <!-- Unit Type -->
+                <div class="mb-3">
+                    <label class="form-label">Unit Type</label>
+                    <input type="text" name="unit_type" class="form-control" 
+                        value="{{ old('unit_type', $unitType) }}" readonly>
+                </div>
+
+                <!-- Room Number -->
+                <div class="mb-3">
+                    <label class="form-label">Room Number</label>
+                    <input type="text" name="room_no" class="form-control" 
+                        value="{{ old('room_no', $roomNo) }}" readonly>
+                </div>
+
+
                 <!-- Description -->
                 <div class="mb-3">
                     <label class="form-label">What request are you asking for?</label>
