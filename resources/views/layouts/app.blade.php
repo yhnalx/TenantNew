@@ -15,25 +15,46 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f9fafc;
+            background-color: #f4f6f9;
+            color: #333;
         }
         a {
             text-decoration: none;
+            transition: color 0.2s ease;
+        }
+        a:hover {
+            color: #0d6efd;
         }
         .navbar-brand {
             font-weight: 700;
             font-size: 1.5rem;
+            color: #0d6efd !important;
+        }
+        header {
+            background-color: #ffffff;
+            border-bottom: 1px solid #e3e6ea;
+        }
+        header .btn {
+            font-size: 0.875rem;
+            font-weight: 500;
+            border-radius: 6px;
+            padding: 6px 14px;
+        }
+        main {
+            padding: 2rem 0;
         }
         footer {
             background-color: #1b1b18;
             color: #f9fafc;
+            font-size: 0.9rem;
         }
         footer a {
             color: #f9fafc;
             text-decoration: none;
+            transition: opacity 0.2s;
         }
         footer a:hover {
-            text-decoration: underline;
+            opacity: 0.8;
         }
     </style>
 
@@ -42,18 +63,18 @@
 <body class="d-flex flex-column min-vh-100">
 
     <!-- Header / Navbar -->
-    <header class="bg-white shadow-sm mb-4">
+    <header class="shadow-sm">
         <div class="container d-flex justify-content-between align-items-center py-3">
-            <a class="navbar-brand text-primary" href="{{ url('/') }}">TenantMS</a>
+            <a class="navbar-brand" href="{{ url('/') }}">TenantMS</a>
             
             @if (Route::has('login'))
-            <nav class="d-flex gap-3">
+            <nav class="d-flex gap-2">
                 @auth
-                    <a href="{{ route('tenant.home') }}" class="btn btn-outline-primary btn-sm">Dashboard</a>
+                    <a href="{{ route('tenant.home') }}" class="btn btn-outline-primary">Dashboard</a>
                 @else
-                    <a href="{{ route('login') }}" class="btn btn-outline-primary btn-sm">Log in</a>
+                    <a href="{{ route('login') }}" class="btn btn-outline-primary">Log in</a>
                     @if (Route::has('register'))
-                        <a href="{{ route('register') }}" class="btn btn-success btn-sm">Register</a>
+                        <a href="{{ route('register') }}" class="btn btn-success">Register</a>
                     @endif
                 @endauth
             </nav>

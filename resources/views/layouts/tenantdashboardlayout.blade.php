@@ -1,3 +1,15 @@
+@php
+use App\Models\Payment;
+
+$hasPaidDeposit = Payment::where('tenant_id', auth()->id())
+    ->get()
+    ->contains(function ($payment) {
+        return strtolower($payment->payment_for) === 'deposit';
+    });
+@endphp
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,36 +22,91 @@
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
 
-    <!-- Optional: Custom CSS -->
-    <link rel="stylesheet" href="{{ asset('css/tenantdashboard.css') }}">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: #fff;
+            border-radius: 0 15px 15px 0;
+            box-shadow: 2px 0 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .sidebar .nav-link {
+            color: #f1f1f1;
+            border-radius: 12px;
+            padding: 10px 15px;
+            margin-bottom: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar .nav-link:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: #fff;
+            transform: translateX(5px);
+        }
+
+        .sidebar .nav-link.active {
+            background: #ffffff;
+            color: #007bff !important;
+            font-weight: 600;
+        }
+
+        .main-content {
+            margin-left: 250px;
+            padding: 2rem;
+        }
+
+        /* Disabled menu style */
+        .nav-link.disabled {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+    </style>
 </head>
 <body>
 <div class="d-flex" id="dashboardWrapper">
 
     {{-- Sidebar --}}
-    <nav class="bg-primary text-white vh-100 p-3 position-fixed" style="width: 250px;">
+    <nav class="sidebar vh-100 p-3 position-fixed">
         <div class="text-center mb-4">
-            <h4 class="fw-bold">🏠 Tenant</h4>
+            <h4 class="fw-bold">Tenant</h4>
         </div>
         <ul class="nav flex-column">
-            <li class="nav-item mb-2">
-                <a class="nav-link text-white {{ request()->routeIs('tenant.home') ? 'active bg-success text-primary rounded' : '' }}" 
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('tenant.home') ? 'active' : '' }}" 
                    href="{{ route('tenant.home') }}">
                     <i class="bi bi-house-fill me-2"></i> Dashboard
                 </a>
             </li>
-            <li class="nav-item mb-2">
-                <a class="nav-link text-white {{ request()->routeIs('tenant.payments') ? 'active bg-success text-primary rounded' : '' }}" 
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('tenant.payments') ? 'active' : '' }}" 
                    href="{{ route('tenant.payments') }}">
                     <i class="bi bi-cash-stack me-2"></i> Payments
                 </a>
             </li>
-            <li class="nav-item mb-2">
-                <a class="nav-link text-white {{ request()->routeIs('tenant.requests') ? 'active bg-success text-primary rounded' : '' }}" 
-                   href="{{ route('tenant.requests') }}">
-                    <i class="bi bi-tools me-2"></i> Maintenance Requests
-                </a>
-            </li>
+
+            {{-- Maintenance Requests (only visible if deposit paid) --}}
+            @if($hasPaidDeposit)
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('tenant.requests') ? 'active' : '' }}" 
+                       href="{{ route('tenant.requests') }}">
+                        <i class="bi bi-tools me-2"></i> Maintenance Requests
+                    </a>
+                </li>
+            @else
+                <li class="nav-item">
+                    <a class="nav-link disabled" href="#" 
+                       title="Complete your deposit payment to access Maintenance Requests">
+                        <i class="bi bi-tools me-2"></i> Maintenance Requests
+                    </a>
+                </li>
+            @endif
+
             <li class="nav-item mt-4">
                 <form action="{{ route('logout') }}" method="POST">
                     @csrf
@@ -52,13 +119,12 @@
     </nav>
 
     {{-- Main Content --}}
-    <main class="flex-grow-1 ms-250 p-4" style="margin-left: 250px;">
+    <main class="main-content flex-grow-1">
         @yield('content')
     </main>
 </div>
 
-<!-- Bootstrap JS Bundle -->
+<!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
 </body>
 </html>

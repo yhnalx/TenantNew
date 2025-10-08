@@ -16,9 +16,14 @@ class Lease extends Model
         'lea_end_date',
         'lea_status',
         'room_no',
-        'terms',
+        'lea_terms',
     ];
 
+    // Make sure date columns are cast to Carbon
+    protected $casts = [
+        'lea_start_date' => 'date',
+        'lea_end_date' => 'date',
+    ];
 
     // Lease belongs to a tenant
     public function tenant()

@@ -17,6 +17,8 @@ class TenantApplication extends Model
         'current_address',
         'birthdate',
         'unit_type',
+        'unit_id',
+        'room_no',
         'move_in_date',
         'reason',
         'employment_status',

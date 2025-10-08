@@ -6,32 +6,86 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
 <style>
-    .card { border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
-    .table thead th { text-align: center; vertical-align: middle; }
-    .badge { font-size: 0.9rem; padding: 0.5em 1em; }
-    .modal-content { border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.2); }
-    .modal-header { border-bottom: none; background: #0d6efd; color: #fff; border-top-left-radius: 12px; border-top-right-radius: 12px; }
-    .modal-footer { border-top: none; }
+    .card {
+        border-radius: 16px;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+        border: none;
+    }
+    .card-header {
+        font-weight: 600;
+        font-size: 1rem;
+        border: none;
+    }
+    .card-header.bg-primary { background: linear-gradient(135deg, #0d6efd, #0a58ca); }
+    .card-header.bg-success { background: linear-gradient(135deg, #198754, #157347); }
+    .card-header.bg-danger { background: linear-gradient(135deg, #dc3545, #b02a37); }
+
+    .table thead th {
+        text-align: center;
+        vertical-align: middle;
+        font-weight: 600;
+        background: #f8f9fa;
+    }
+    .table tbody tr:hover {
+        background: #f1f5ff;
+        transition: 0.2s ease-in-out;
+    }
+    .badge {
+        font-size: 0.85rem;
+        padding: 0.45em 0.8em;
+        border-radius: 8px;
+    }
+    .btn {
+        border-radius: 8px;
+    }
+    .btn-sm {
+        padding: 0.35rem 0.7rem;
+        font-size: 0.85rem;
+    }
+
+    /* Modal */
+    .modal-content {
+        border-radius: 14px;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+        border: none;
+    }
+    .modal-header {
+        background: linear-gradient(135deg, #0d6efd, #0a58ca);
+        color: #fff;
+        border-top-left-radius: 14px;
+        border-top-right-radius: 14px;
+    }
+    .modal-footer {
+        border-top: none;
+    }
+    .modal .btn-close {
+        filter: invert(1);
+    }
 </style>
 @endpush
 
 @section('content')
 <div class="container mt-4">
-    <h2 class="mb-4 fw-bold text-primary">👥 Tenant Management</h2>
+    <h2 class="mb-4 fw-bold text-primary">
+        <i class="bi bi-people-fill"></i> Tenant Management
+    </h2>
 
     <!-- Pending Tenants -->
     <div class="card mb-4">
-        <div class="card-header bg-primary text-white">Pending Tenant Applications</div>
+        <div class="card-header bg-primary text-white">
+            <i class="bi bi-hourglass-split me-1"></i> Pending Tenant Applications
+        </div>
         <div class="card-body">
             @if($pendingTenants->isEmpty())
-                <p class="text-muted">No pending applications.</p>
+                <p class="text-muted text-center">No pending applications.</p>
             @else
                 <div class="table-responsive">
                     <table class="table table-hover align-middle text-center">
-                        <thead class="table">
+                        <thead>
                             <tr>
                                 <th>Name</th>
                                 <th>Email</th>
+                                <th>Status</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -40,6 +94,9 @@
                                 <tr>
                                     <td>{{ $tenant->name }}</td>
                                     <td>{{ $tenant->email }}</td>
+                                    <td>
+                                        <span class="badge bg-warning text-dark">Pending</span>
+                                    </td>
                                     <td>
                                         <!-- Approve -->
                                         <form action="{{ route('manager.tenant.approve', $tenant->id) }}" method="POST" class="d-inline">
@@ -67,17 +124,20 @@
 
     <!-- Approved Tenants -->
     <div class="card mb-4">
-        <div class="card-header bg-success text-white">Approved Tenants</div>
+        <div class="card-header bg-success text-white">
+            <i class="bi bi-check2-circle me-1"></i> Approved Tenants
+        </div>
         <div class="card-body">
             @if($approvedTenantList->isEmpty())
-                <p class="text-muted">No approved tenants.</p>
+                <p class="text-muted text-center">No approved tenants.</p>
             @else
                 <div class="table-responsive">
                     <table class="table table-hover align-middle text-center">
-                        <thead class="table">
+                        <thead>
                             <tr>
                                 <th>Name</th>
                                 <th>Email</th>
+                                <th>Status</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -85,6 +145,7 @@
                                 <tr>
                                     <td>{{ $tenant->name }}</td>
                                     <td>{{ $tenant->email }}</td>
+                                    <td><span class="badge bg-success">Approved</span></td>
                                 </tr>
                             @endforeach
                         </tbody>
@@ -96,17 +157,20 @@
 
     <!-- Rejected Tenants -->
     <div class="card mb-4">
-        <div class="card-header bg-danger text-white">Rejected Tenants</div>
+        <div class="card-header bg-danger text-white">
+            <i class="bi bi-x-octagon me-1"></i> Rejected Tenants
+        </div>
         <div class="card-body">
             @if($rejectedTenantList->isEmpty())
-                <p class="text-muted">No rejected tenants.</p>
+                <p class="text-muted text-center">No rejected tenants.</p>
             @else
                 <div class="table-responsive">
                     <table class="table table-hover align-middle text-center">
-                        <thead class="table">
+                        <thead>
                             <tr>
                                 <th>Name</th>
                                 <th>Email</th>
+                                <th>Status</th>
                                 <th>Reason</th>
                             </tr>
                         </thead>
@@ -115,6 +179,7 @@
                                 <tr>
                                     <td>{{ $tenant->name }}</td>
                                     <td>{{ $tenant->email }}</td>
+                                    <td><span class="badge bg-danger">Rejected</span></td>
                                     <td>{{ $tenant->rejection_reason ?? 'N/A' }}</td>
                                 </tr>
                             @endforeach
@@ -126,7 +191,7 @@
     </div>
 </div>
 
-<!-- Reject Modals (placed after table to avoid HTML glitches) -->
+<!-- Reject Modals -->
 @foreach($pendingTenants as $tenant)
 <div class="modal fade" id="rejectTenantModal{{ $tenant->id }}" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">

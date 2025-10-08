@@ -129,10 +129,11 @@ class ReportsController extends Controller
                     $handle = fopen('php://output', 'w');
 
                     // CSV header
-                    fputcsv($handle, ['Tenant', 'Amount', 'Date', 'Purpose', 'Status']);
+                    fputcsv($handle, ['Reference_number', 'Tenant', 'Amount', 'Date', 'Purpose', 'Status']);
 
                     foreach ($payments as $payment) {
                         fputcsv($handle, [
+                            $payment->reference_number,
                             $payment->tenant->name ?? 'N/A',
                             $payment->pay_amount,
                             optional($payment->pay_date)->format('Y-m-d'),

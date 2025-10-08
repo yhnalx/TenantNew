@@ -4,22 +4,33 @@
 @section('page-title', $title)
 
 @section('content')
-<div class="container mt-4">
-    
-    <h4>{{ $title }}</h4>
+<div class="container-fluid mt-4">
+
+    {{-- ---------------- PAGE HEADER ---------------- --}}
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="fw-bold text-secondary mb-0">
+            <i class="bi bi-bar-chart-line me-2"></i> {{ $title }}
+        </h4>
+        <a href="{{ route('manager.reports.export', array_merge(['report' => $report], request()->all())) }}" 
+           class="btn btn-success btn-sm shadow-sm">
+            <i class="bi bi-file-earmark-arrow-down me-1"></i> Export CSV
+        </a>
+    </div>
     <hr>
 
-    {{-- ---------------- FILTER & EXPORT ---------------- --}}
+    {{-- ---------------- FILTER SECTION ---------------- --}}
     @if(in_array($report, ['active-tenants', 'pending-tenants', 'rejected-tenants', 'maintenance-requests', 'payment-history']))
-        <div class="card shadow-sm mb-3">
+        <div class="card shadow-sm mb-4 border-0">
+            <div class="card-header bg-light fw-bold">
+                <i class="bi bi-funnel-fill me-2 text-primary"></i> Filters
+            </div>
             <div class="card-body">
-                <form method="GET" action="{{ route('manager.reports.show', ['report' => $report]) }}" class="row g-2 align-items-center">
+                <form method="GET" action="{{ route('manager.reports.show', ['report' => $report]) }}" class="row gy-2 gx-3 align-items-center">
                     
+                    {{-- Payment History Filters --}}
                     @if($report === 'payment-history')
-                        <div class="col-auto">
-                            <label for="payment_for" class="col-form-label fw-bold">Filter by Purpose:</label>
-                        </div>
-                        <div class="col-auto">
+                        <div class="col-md-3">
+                            <label for="payment_for" class="form-label fw-semibold">Purpose</label>
                             <select name="payment_for" id="payment_for" class="form-select" onchange="this.form.submit()">
                                 <option value="">All</option>
                                 <option value="rent" {{ request('payment_for') === 'rent' ? 'selected' : '' }}>Rent</option>
@@ -27,11 +38,11 @@
                                 <option value="others" {{ request('payment_for') === 'others' ? 'selected' : '' }}>Others</option>
                             </select>
                         </div>
+
+                    {{-- Maintenance Filters --}}
                     @elseif($report === 'maintenance-requests')
-                        <div class="col-auto">
-                            <label for="status" class="col-form-label fw-bold">Filter by Status:</label>
-                        </div>
-                        <div class="col-auto">
+                        <div class="col-md-3">
+                            <label for="status" class="form-label fw-semibold">Status</label>
                             <select name="status" id="status" class="form-select" onchange="this.form.submit()">
                                 <option value="">All</option>
                                 <option value="Pending" {{ request('status') === 'Pending' ? 'selected' : '' }}>Pending</option>
@@ -39,10 +50,8 @@
                                 <option value="Completed" {{ request('status') === 'Completed' ? 'selected' : '' }}>Completed</option>
                             </select>
                         </div>
-                        <div class="col-auto">
-                            <label for="urgency" class="col-form-label fw-bold">Filter by Urgency:</label>
-                        </div>
-                        <div class="col-auto">
+                        <div class="col-md-3">
+                            <label for="urgency" class="form-label fw-semibold">Urgency</label>
                             <select name="urgency" id="urgency" class="form-select" onchange="this.form.submit()">
                                 <option value="">All</option>
                                 <option value="low" {{ request('urgency') === 'low' ? 'selected' : '' }}>Low</option>
@@ -50,11 +59,11 @@
                                 <option value="high" {{ request('urgency') === 'high' ? 'selected' : '' }}>High</option>
                             </select>
                         </div>
+
+                    {{-- Active Tenants Filters --}}
                     @elseif($report === 'active-tenants')
-                        <div class="col-auto">
-                            <label for="unit_type" class="col-form-label fw-bold">Filter by Unit Type:</label>
-                        </div>
-                        <div class="col-auto">
+                        <div class="col-md-3">
+                            <label for="unit_type" class="form-label fw-semibold">Unit Type</label>
                             <select name="unit_type" id="unit_type" class="form-select" onchange="this.form.submit()">
                                 <option value="">All</option>
                                 @foreach(\App\Models\TenantApplication::select('unit_type')->distinct()->get() as $unit)
@@ -65,10 +74,8 @@
                             </select>
                         </div>
 
-                        <div class="col-auto">
-                            <label for="employment_status" class="col-form-label fw-bold">Filter by Employment Status:</label>
-                        </div>
-                        <div class="col-auto">
+                        <div class="col-md-3">
+                            <label for="employment_status" class="form-label fw-semibold">Employment Status</label>
                             <select name="employment_status" id="employment_status" class="form-select" onchange="this.form.submit()">
                                 <option value="">All</option>
                                 @foreach(\App\Models\TenantApplication::select('employment_status')->distinct()->get() as $emp)
@@ -79,32 +86,25 @@
                             </select>
                         </div>
                     @endif
-
-                    <div class="col-auto ms-auto">
-                        <a href="{{ route('manager.reports.export', array_merge(['report' => $report], request()->all())) }}" class="btn btn-success">
-                            Export CSV
-                        </a>
-                    </div>
                 </form>
             </div>
         </div>
     @endif
 
-    {{-- ---------------- SUMMARY CARD ---------------- --}}
-    <div class="card shadow-sm mb-3">
+    {{-- ---------------- SUMMARY ---------------- --}}
+    <div class="card shadow-sm mb-4 border-0">
         <div class="card-body d-flex justify-content-between align-items-center">
             <div>
-                <h5 class="card-title mb-1">
+                <h5 class="fw-bold text-dark mb-1">
                     @if($report === 'payment-history')
-                        Payment Summary
+                        <i class="bi bi-cash-coin text-success me-2"></i> Payment Summary
                     @elseif($report === 'maintenance-requests')
-                        Maintenance Requests Summary
+                        <i class="bi bi-tools text-warning me-2"></i> Maintenance Summary
                     @else
-                        Summary
+                        <i class="bi bi-list-ul text-secondary me-2"></i> Summary
                     @endif
                 </h5>
-
-                <div class="text-muted small">
+                <p class="small text-muted mb-0">
                     @if($report === 'payment-history')
                         Showing: <strong>{{ $currentFilter ? ucfirst($currentFilter) : 'All Categories' }}</strong>
                     @elseif($report === 'maintenance-requests')
@@ -116,27 +116,27 @@
                     @else
                         Total Records
                     @endif
-                </div>
+                </p>
             </div>
-
             <div class="text-end">
                 @if($report === 'payment-history')
-                    <div class="small text-muted">Total Paid</div>
-                    <div class="fs-4 fw-bold">₱{{ number_format($total ?? 0, 2) }}</div>
+                    <span class="small text-muted">Total Paid</span>
+                    <div class="fs-4 fw-bold text-success">₱{{ number_format($total ?? 0, 2) }}</div>
                 @else
-                    <div class="small text-muted">Total</div>
-                    <div class="fs-4 fw-bold">{{ $total ?? $data->total() }}</div>
+                    <span class="small text-muted">Total</span>
+                    <div class="fs-4 fw-bold text-primary">{{ $total ?? $data->total() }}</div>
                 @endif
             </div>
         </div>
     </div>
 
-    {{-- ---------------- TABLE ---------------- --}}
-    <div class="card shadow-sm">
+    {{-- ---------------- DATA TABLE ---------------- --}}
+    <div class="card shadow-sm border-0">
         <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-striped mb-0 align-middle">
-                    <thead class="table-light">
+                <table class="table table-hover table-striped align-middle mb-0">
+                    <thead class="table-secondary">
+                        {{-- HEADERS --}}
                         @if($report === 'payment-history')
                             <tr>
                                 <th>Tenant</th>
@@ -153,8 +153,7 @@
                                 <th>Unit Type</th>
                                 <th>Employment Status</th>
                                 <th>Source of Income</th>
-                                <th>Emergency Name</th>
-                                <th>Emergency Number</th>
+                                <th>Emergency Contact</th>
                                 <th>Status</th>
                             </tr>
                         @elseif($report === 'lease-summary')
@@ -163,6 +162,7 @@
                                 <th>Unit Type</th>
                                 <th>Lease Start</th>
                                 <th>Lease End</th>
+                                <th>Lease Term</th>
                             </tr>
                         @elseif($report === 'maintenance-requests')
                             <tr>
@@ -178,10 +178,11 @@
 
                     <tbody>
                         @forelse($data as $item)
+                            {{-- PAYMENT ROWS --}}
                             @if($report === 'payment-history')
                                 <tr>
                                     <td>{{ $item->tenant->name ?? 'N/A' }}</td>
-                                    <td>₱{{ number_format($item->pay_amount, 2) }}</td>
+                                    <td><span class="fw-semibold">₱{{ number_format($item->pay_amount, 2) }}</span></td>
                                     <td>{{ $item->pay_date?->format('M d, Y') ?? 'N/A' }}</td>
                                     <td>{{ ucfirst($item->payment_for) }}</td>
                                     <td>
@@ -195,6 +196,8 @@
                                         </form>
                                     </td>
                                 </tr>
+
+                            {{-- TENANTS --}}
                             @elseif(in_array($report, ['active-tenants', 'pending-tenants', 'rejected-tenants']))
                                 @php $app = $item->tenantApplication; @endphp
                                 <tr>
@@ -204,20 +207,27 @@
                                     <td>{{ $app->unit_type ?? 'N/A' }}</td>
                                     <td>{{ $app->employment_status ?? 'N/A' }}</td>
                                     <td>{{ $app->source_of_income ?? 'N/A' }}</td>
-                                    <td>{{ $app->emergency_name ?? 'N/A' }}</td>
-                                    <td>{{ $app->emergency_number ?? 'N/A' }}</td>
-                                    <td>{{ ucfirst($item->status) }}</td>
+                                    <td>{{ $app->emergency_name ?? 'N/A' }} <br><small class="text-muted">{{ $app->emergency_number ?? '' }}</small></td>
+                                    <td>
+                                        <span class="badge bg-{{ $item->status === 'approved' ? 'success' : ($item->status === 'pending' ? 'warning text-dark' : 'danger') }}">
+                                            {{ ucfirst($item->status) }}
+                                        </span>
+                                    </td>
                                 </tr>
+
+                            {{-- LEASES --}}
                             @elseif($report === 'lease-summary')
-                                @php
-                                    $lease = $item->leases->first();
-                                @endphp
-                                <tr>
-                                    <td>{{ $item->name }}</td>
-                                    <td>{{ $item->tenantApplication->unit_type ?? 'N/A' }}</td>
-                                    <td>{{ $lease?->lea_start_date ? \Carbon\Carbon::parse($lease->lea_start_date)->format('M d, Y') : 'N/A' }}</td>
-                                    <td>{{ $lease?->lea_end_date ? \Carbon\Carbon::parse($lease->lea_end_date)->format('M d, Y') : 'N/A' }}</td>
-                                </tr>
+                            @php $lease = $item->leases->first(); @endphp
+                            <tr>
+                                <td>{{ $item->name }}</td>
+                                <td>{{ $item->tenantApplication->unit_type ?? 'N/A' }}</td>
+                                <td>{{ $lease?->lea_start_date ? \Carbon\Carbon::parse($lease->lea_start_date)->format('M d, Y') : 'N/A' }}</td>
+                                <td>{{ $lease?->lea_end_date ? \Carbon\Carbon::parse($lease->lea_end_date)->format('M d, Y') : 'N/A' }}</td>
+                                <td>{{ $lease?->lea_terms ?? 'N/A' }}</td>
+                            </tr>
+
+
+                            {{-- MAINTENANCE --}}
                             @elseif($report === 'maintenance-requests')
                                 <tr>
                                     <td>{{ $item->tenant->name ?? 'N/A' }}</td>
@@ -254,8 +264,8 @@
             </div>
         </div>
 
-        {{-- ---------------- PAGINATION ---------------- --}}
-        <div class="card-footer d-flex justify-content-center">
+        {{-- PAGINATION --}}
+        <div class="card-footer bg-light d-flex justify-content-center">
             {{ $data->appends(request()->query())->links() }}
         </div>
     </div>

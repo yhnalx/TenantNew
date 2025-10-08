@@ -15,6 +15,7 @@ class Payment extends Model
         'pay_amount',
         'pay_method',     // Cash, GCash, Bank Transfer
         'account_no',
+        'reference_number',
         'pay_status',     // Paid, Pending, Overdue
         'proof',
     ];

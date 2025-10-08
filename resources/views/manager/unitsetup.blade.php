@@ -6,11 +6,26 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
 <style>
+    /* Card & Layout */
     .card { border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+    .card-header { font-weight: 600; font-size: 1.1rem; }
+
+    /* Table Styling */
     .table thead th { text-align: center; vertical-align: middle; }
-    .badge { font-size: 0.9rem; padding: 0.5em 1em; }
+    .table-hover tbody tr:hover { background: #f9fafb; }
+    .table td, .table th { vertical-align: middle; }
+
+    /* Badges */
+    .badge { font-size: 0.9rem; padding: 0.5em 1em; border-radius: 12px; }
+
+    /* Buttons */
+    .btn-sm { border-radius: 8px; }
+    .btn-primary, .btn-warning, .btn-danger { box-shadow: 0 3px 10px rgba(0,0,0,0.1); }
+
+    /* Modals */
     .modal-content { border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.2); }
     .modal-header { border-bottom: none; background: #0d6efd; color: #fff; border-top-left-radius: 12px; border-top-right-radius: 12px; }
+    .modal-header.bg-danger { background: #dc3545; }
     .modal-footer { border-top: none; }
 </style>
 @endpush
@@ -26,6 +41,7 @@
 
     <!-- Units Table -->
     <div class="card">
+        <div class="card-header bg-dark text-white">All Units</div>
         <div class="card-body">
             <div class="table-responsive">
                 <table class="table table-hover align-middle text-center">
@@ -43,7 +59,7 @@
                         @forelse($units as $unit)
                         <tr>
                             <td>{{ $unit->id }}</td>
-                            <td>{{ $unit->type }}</td>
+                            <td><span class="fw-semibold">{{ $unit->type }}</span></td>
                             <td><span class="fw-bold">{{ $unit->room_no }}</span></td>
                             <td><span class="text-success fw-semibold">₱{{ number_format($unit->room_price, 2) }}</span></td>
                             <td>
@@ -92,17 +108,15 @@
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <!-- Type Dropdown -->
                     <div class="mb-3">
                         <label class="form-label">Type</label>
                         <select name="type" class="form-select" required>
                             <option value="">Select Type</option>
-                            @foreach(['Studio','1-Bedroom','2-Bedroom','Penthouse'] as $type)
+                            @foreach(['Studio','1-Bedroom','2-Bedroom', 'Commercial'] as $type)
                                 <option value="{{ $type }}">{{ $type }}</option>
                             @endforeach
                         </select>
                     </div>
-
                     <div class="mb-3">
                         <label class="form-label">Room No</label>
                         <input type="text" name="room_no" class="form-control" required>
@@ -131,7 +145,7 @@
 <!-- EDIT & DELETE modals -->
 @foreach($units as $unit)
     <!-- Edit Modal -->
-    <div class="modal fade" id="editUnitModal{{ $unit->id }}" tabindex="-1" aria-labelledby="editUnitModalLabel{{ $unit->id }}" aria-hidden="true">
+    <div class="modal fade" id="editUnitModal{{ $unit->id }}" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
             <form method="POST" action="{{ route('manager.units.update', $unit->id) }}">
                 @csrf
@@ -142,17 +156,15 @@
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
-                        <!-- Type Dropdown -->
                         <div class="mb-3">
                             <label class="form-label">Type</label>
                             <select name="type" class="form-select" required>
                                 <option value="">Select Type</option>
-                                @foreach(['Studio','1-Bedroom','2-Bedroom','Penthouse'] as $type)
+                                @foreach(['Studio','1-Bedroom','2-Bedroom', 'Commercial'] as $type)
                                     <option value="{{ $type }}" {{ $unit->type === $type ? 'selected' : '' }}>{{ $type }}</option>
                                 @endforeach
                             </select>
                         </div>
-
                         <div class="mb-3">
                             <label class="form-label">Room No</label>
                             <input type="text" name="room_no" class="form-control" value="{{ $unit->room_no }}" required>
@@ -179,7 +191,7 @@
     </div>
 
     <!-- Delete Modal -->
-    <div class="modal fade" id="deleteUnitModal{{ $unit->id }}" tabindex="-1" aria-labelledby="deleteUnitModalLabel{{ $unit->id }}" aria-hidden="true">
+    <div class="modal fade" id="deleteUnitModal{{ $unit->id }}" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
             <form method="POST" action="{{ route('manager.units.destroy', $unit->id) }}">
                 @csrf
@@ -207,7 +219,7 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    var tooltipEls = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipEls = [].slice.call(document.querySelectorAll('[title]'));
     tooltipEls.forEach(function (el) {
         new bootstrap.Tooltip(el);
     });

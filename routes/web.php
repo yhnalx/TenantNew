@@ -13,6 +13,12 @@ use App\Http\Controllers\Tenant\TenantRequestController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\Manager\UnitController;
+use Illuminate\Support\Facades\Artisan;
+
+Route::get('/run-scheduler', function () {
+    Artisan::call('schedule:run');
+    return "Scheduler executed successfully!";
+});
 
 // Default route
 Route::get('/', function () {

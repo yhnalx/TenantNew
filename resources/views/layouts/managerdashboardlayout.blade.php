@@ -9,15 +9,16 @@
 
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
+
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
 
-    <!-- Bootstrap Bundle JS (with Popper.js) -->
+    <!-- Bootstrap Bundle JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" defer></script>
 
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ asset('css/managerdashboard.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/sidebar.css') }}">
 </head>
 <body>
 
@@ -26,15 +27,44 @@
     @include('layouts.sidebarlayout')
 
     <!-- Main Content -->
-    <main class="flex-grow-1 ms-lg-250 px-4 py-4" style="margin-left: 250px;">
+    <main class="flex-grow-1 px-4 py-4" id="mainContent">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="fw-bold">@yield('page-title')</h2>
+            <!-- Sidebar Toggle Button -->
+            <button id="sidebarToggle" class="btn btn-outline-secondary d-lg-none">
+                <i class="bi bi-list"></i>
+            </button>
+            <h2 class="fw-bold m-0">@yield('page-title')</h2>
         </div>
+
         @yield('content')
     </main>
 </div>
 
-<!-- Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Custom JS -->
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const sidebar = document.getElementById("sidebarMenu");
+        const toggleBtn = document.getElementById("sidebarToggle");
+
+        toggleBtn?.addEventListener("click", () => {
+            if (window.innerWidth <= 991) {
+                sidebar.classList.toggle("active");
+                document.body.classList.toggle("sidebar-open");
+            } else {
+                sidebar.classList.toggle("collapsed");
+                document.getElementById("mainContent").classList.toggle("expanded");
+            }
+        });
+
+        // Close sidebar when clicking overlay on mobile
+        document.body.addEventListener("click", (e) => {
+            if (document.body.classList.contains("sidebar-open") && !sidebar.contains(e.target) && !toggleBtn.contains(e.target)) {
+                sidebar.classList.remove("active");
+                document.body.classList.remove("sidebar-open");
+            }
+        });
+    });
+</script>
+
 </body>
 </html>

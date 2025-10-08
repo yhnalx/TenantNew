@@ -5,15 +5,18 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\TenantApplication;
+use App\Models\Unit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Storage;
 
 class RegisterController extends Controller
 {
     public function index()
     {
-        return view('auth.register');
+        $unitTypes = ['Studio', '1-Bedroom', '2-Bedroom', 'Commercial'];
+        $availableUnits = Unit::where('status', 'vacant')->get();
+
+        return view('auth.register', compact('unitTypes', 'availableUnits'));
     }
 
     public function register(Request $request)
@@ -33,6 +36,7 @@ class RegisterController extends Controller
             'current_address' => 'required|string',
             'birthdate'       => 'required|date|before:today',
             'unit_type'       => 'required|string',
+            'unit_id'         => 'required|exists:units,id',
             'move_in_date'    => 'required|date|after_or_equal:today',
             'reason'          => 'required|string',
             'employment_status'=> 'required|string',
@@ -44,6 +48,14 @@ class RegisterController extends Controller
             'valid_id'        => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
             'id_picture'      => 'required|image|max:2048',
         ]);
+
+        // Check if selected unit is already occupied
+        $unit = Unit::find($request->unit_id);
+        if ($unit->status === 'occupied') {
+            return redirect()->back()
+                            ->withInput()
+                            ->with('error', 'The selected room is already occupied. Please choose another one.');
+        }
 
         // Upload files
         $validIdPath = $request->file('valid_id')->store('tenant_ids', 'public');
@@ -68,6 +80,8 @@ class RegisterController extends Controller
             'current_address'       => $request->current_address,
             'birthdate'             => $request->birthdate,
             'unit_type'             => $request->unit_type,
+            'unit_id'               => $request->unit_id,
+            'room_no'               => $unit->room_no,
             'move_in_date'          => $request->move_in_date,
             'reason'                => $request->reason,
             'employment_status'     => $request->employment_status,
@@ -81,6 +95,7 @@ class RegisterController extends Controller
         ]);
 
         return redirect()->route('login')
-                         ->with('success', 'Tenant registration and application submitted successfully! Awaiting approval.');
+                        ->with('success', 'Tenant registration and application submitted successfully! Awaiting approval.');
     }
+
 }
