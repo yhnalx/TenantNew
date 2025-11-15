@@ -13,7 +13,8 @@ class ManagerSeeder extends Seeder
         User::updateOrCreate(
             ['email' => 'manager@example.com'], // change email if you want
             [
-                'name' => 'Tenant Manager',
+                'first_name' => 'Tenant ',
+                'last_name' => 'Manager',
                 'password' => Hash::make('password123'), // set secure password
                 'role' => 'manager',
                 'status' => 'approved'

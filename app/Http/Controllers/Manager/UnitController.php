@@ -27,6 +27,7 @@ class UnitController extends Controller
             'room_no' => 'required|string|max:50|unique:units,room_no',
             'room_price' => 'required|numeric|min:0',
             'status' => 'required|in:vacant,occupied',
+            'capacity' => 'required|integer|min:1',
         ]);
 
         Unit::create([
@@ -34,6 +35,7 @@ class UnitController extends Controller
             'room_no' => $request->room_no,
             'room_price' => $request->room_price,
             'status' => $request->status,
+            'capacity' => $request->capacity,
         ]);
 
         return redirect()->route('manager.units.index')->with('success', 'Unit added successfully.');
@@ -61,9 +63,10 @@ class UnitController extends Controller
             'room_no' => 'required|string|max:50|unique:units,room_no,' . $unit->id,
             'room_price' => 'required|numeric|min:0',
             'status' => 'required|in:vacant,occupied',
+            'capacity' => 'required|integer|min:1',
         ]);
 
-        $unit->update($request->only(['type', 'room_no', 'room_price', 'status']));
+        $unit->update($request->only(['type', 'room_no', 'room_price', 'status', 'capacity']));
 
         return redirect()->route('manager.units.index')
             ->with('success', 'Unit updated successfully.');

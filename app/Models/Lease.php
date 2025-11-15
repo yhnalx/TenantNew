@@ -9,6 +9,16 @@ class Lease extends Model
 {
     use HasFactory;
 
+    // protected $fillable = [
+    //     'user_id',
+    //     'unit_id',
+    //     'lea_start_date',
+    //     'lea_end_date',
+    //     'lea_status',
+    //     'room_no',
+    //     'lea_terms',
+    // ];
+
     protected $fillable = [
         'user_id',
         'unit_id',
@@ -17,7 +27,13 @@ class Lease extends Model
         'lea_status',
         'room_no',
         'lea_terms',
+        'rent_balance',
+        'utility_balance',
+        'deposit_amount',
+        'rental_payment_status',
+        'utility_payment_status',
     ];
+
 
     // Make sure date columns are cast to Carbon
     protected $casts = [
@@ -47,5 +63,10 @@ class Lease extends Model
     public function maintenanceRequests()
     {
         return $this->hasMany(MaintenanceRequest::class, 'tenant_id', 'user_id');
+    }
+
+    public function propertyApplication()
+    {
+        return $this->belongsTo(PropertyApplication::class, 'property_application_id');
     }
 }

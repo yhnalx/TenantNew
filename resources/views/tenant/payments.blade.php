@@ -3,86 +3,114 @@
 @section('title', 'My Payments')
 
 @section('content')
-<div class="row mb-4">
-    <div class="col-md-6 mb-3">
-        <div class="card shadow-sm border-0 rounded-4 text-white" style="background: linear-gradient(135deg, #ffb347, #ffcc33);">
-            <div class="card-body">
-                <h6 class="card-title fw-semibold">Unpaid Rent - {{ \Carbon\Carbon::now()->format('F Y') }}</h6>
-                <p class="card-text display-6 fw-bold">₱{{ number_format($unpaidRent, 2) }}</p>
+<div class="container-fluid px-0">
+
+    {{-- 🔔 Flash Messages --}}
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show rounded-4 shadow-sm" role="alert">
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+    @if(session('error'))
+        <div class="alert alert-danger alert-dismissible fade show rounded-4 shadow-sm" role="alert">
+            {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+
+     {{-- 🏠 Payment Summary Cards --}}
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 rounded-4 shadow-sm h-100 bg-gradient-warning text-white">
+                <div class="card-body d-flex flex-column justify-content-center text-center">
+                    <i class="bi bi-cash-coin fs-1 mb-2 opacity-75"></i>
+                    <h6 class="fw-semibold">Unpaid Rent ({{ $unpaidRentMonth }})</h6>
+                    <h3 class="fw-bold mb-0">₱{{ number_format($unpaidRent, 2) }}</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 rounded-4 shadow-sm h-100 bg-gradient-danger text-white"
+                 style="cursor:pointer;" onclick="viewUtilityProof()">
+                <div class="card-body d-flex flex-column justify-content-center text-center">
+                    <i class="bi bi-lightning-charge-fill fs-1 mb-2 opacity-75"></i>
+                    <h6 class="fw-semibold">Unpaid Utilities ({{ $unpaidUtilitiesMonth }})</h6>
+                    <h3 class="fw-bold mb-0">₱{{ number_format($unpaidUtilities, 2) }}</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 rounded-4 shadow-sm h-100 bg-gradient-success text-white">
+                <div class="card-body d-flex flex-column justify-content-center text-center">
+                    <i class="bi bi-wallet2 fs-1 mb-2 opacity-75"></i>
+                    <h6 class="fw-semibold">Advance Payment</h6>
+                    <h3 class="fw-bold mb-0">₱{{ number_format(auth()->user()->user_credit ?? 0, 2) }}</h3>
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-md-6 mb-3">
-        <div class="card shadow-sm border-0 rounded-4 text-white" style="background: linear-gradient(135deg, #ff5f6d, #ffc371);">
-            <div class="card-body">
-                <h6 class="card-title fw-semibold">Unpaid Utilities - {{ \Carbon\Carbon::now()->format('F Y') }}</h6>
-                <p class="card-text display-6 fw-bold">₱{{ number_format($unpaidUtilities, 2) }}</p>
-            </div>
+
+    {{-- 📜 Payment History --}}
+    <div class="card border-0 rounded-4 shadow-sm mb-4">
+        <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center rounded-top-4">
+            <h5 class="fw-bold mb-0"><i class="bi bi-clock-history me-2"></i>Payment History</h5>
+            <button class="btn btn-sm text-white px-3 py-2 rounded-3" style="background-color:#7e7eee;" data-bs-toggle="modal" data-bs-target="#makePaymentModal">
+                <i class="bi bi-plus-lg"></i> Make Payment
+            </button>
+        </div>
+
+        <div class="card-body">
+            @if($payments->isEmpty())
+                <p class="text-muted text-center py-4">No payments recorded yet.</p>
+            @else
+                <div class="table-responsive">
+                    <table class="table align-middle table-borderless">
+                        <thead class="table-light text-uppercase small text-muted">
+                            <tr>
+                                <th>#</th>
+                                <th>Date</th>
+                                <th>Payment For</th>
+                                <th>Method</th>
+                                <th>Amount</th>
+                                <th>Account No</th>
+                                <th>Status</th>
+                                <th>Proof</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($payments as $payment)
+                            <tr class="align-middle">
+                                <td>{{ $loop->iteration }}</td>
+                                <td>{{ \Carbon\Carbon::parse($payment->pay_date ?? $payment->created_at)->format('M d, Y') }}</td>
+                                <td>{{ $payment->payment_for ?? '-' }}</td>
+                                <td>{{ ucfirst($payment->pay_method) }}</td>
+                                <td class="fw-semibold text-success">₱{{ number_format($payment->pay_amount, 2) }}</td>
+                                <td>{{ $payment->account_no ?? '-' }}</td>
+                                <td>
+                                    <span class="badge rounded-pill bg-{{ $payment->pay_status === 'Accepted' ? 'success' : 'warning text-dark' }}">
+                                        {{ $payment->pay_status }}
+                                    </span>
+                                </td>
+                                <td>
+                                    @if($payment->proof)
+                                        <a href="{{ asset('storage/'.$payment->proof) }}" target="_blank" class="btn btn-outline-info btn-sm rounded-pill">View</a>
+                                    @else
+                                        <span class="text-muted">-</span>
+                                    @endif
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @endif
         </div>
     </div>
 </div>
 
-<div class="card shadow-sm rounded-4 border-0">
-    <div class="card-header d-flex justify-content-between align-items-center bg-white border-bottom-0">
-        <h5 class="mb-0 fw-bold">Payment History</h5>
-        <button class="btn btn-primary btn-sm rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#makePaymentModal">
-            Make Payment
-        </button>
-    </div>
-    <div class="card-body">
-        @if(session('success'))
-            <div class="alert alert-success rounded-4">{{ session('success') }}</div>
-        @endif
-        @if(session('error'))
-            <div class="alert alert-danger rounded-4">{{ session('error') }}</div>
-        @endif
-
-        @if($payments->isEmpty())
-            <p class="text-muted">No payments found.</p>
-        @else
-            <div class="table-responsive">
-                <table class="table table-borderless table-hover align-middle">
-                    <thead class="table-light text-uppercase text-muted small">
-                        <tr>
-                            <th>#</th>
-                            <th>Date</th>
-                            <th>Payment For</th>
-                            <th>Method</th>
-                            <th>Amount</th>
-                            <th>Account No</th>
-                            <th>Status</th>
-                            <th>Proof</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($payments as $payment)
-                        <tr>
-                            <td>{{ $loop->iteration }}</td>
-                            <td>{{ \Carbon\Carbon::parse($payment->pay_date ?? $payment->created_at)->format('M d, Y') }}</td>
-                            <td>{{ $payment->payment_for ?? '-' }}</td>
-                            <td>{{ ucfirst($payment->pay_method) }}</td>
-                            <td class="fw-semibold">₱{{ number_format($payment->pay_amount, 2) }}</td>
-                            <td>{{ $payment->account_no ?? '-' }}</td>
-                            <td>
-                                <span class="badge rounded-pill bg-{{ $payment->pay_status === 'Accepted' ? 'success' : 'warning text-dark' }}">
-                                    {{ $payment->pay_status }}
-                                </span>
-                            </td>
-                            <td>
-                                @if($payment->proof)
-                                    <a href="{{ asset('storage/'.$payment->proof) }}" target="_blank" class="btn btn-outline-info btn-sm rounded-pill">View</a>
-                                @else
-                                    <span class="text-muted">-</span>
-                                @endif
-                            </td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-        @endif
-    </div>
-</div>
 
 <!-- Make Payment Modal -->
 <div class="modal fade" id="makePaymentModal" tabindex="-1" aria-labelledby="makePaymentModalLabel" aria-hidden="true">
@@ -110,7 +138,7 @@
                                 <option value="Utilities" data-balance="{{ $user->utility_balance }}">Utilities (₱{{ number_format($user->utility_balance, 2) }})</option>
                             @endif
                         @endif
-                        <option value="Other" data-balance="0">Other</option>
+                        <option value="Other" data-balance="0">Pay in Advance</option>
                     </select>
                     <label for="payment_for">Payment For</label>
                 </div>
@@ -142,55 +170,98 @@
             </div>
             <div class="modal-footer border-0">
                 <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
-                <button type="submit" class="btn btn-primary rounded-pill px-4">Submit Payment</button>
+                <button
+                    class="btn btn-sm text-white"
+                    data-bs-toggle="modal"
+                    data-bs-target="#makePaymentModal"
+                    style="background-color: #b8793e; border: none; border-radius: 8px; padding: 8px 16px;">
+                    + Submit Payment
+                </button>
             </div>
         </form>
     </div>
 </div>
 
 
+{{-- 🔍 Utility Proof Modal --}}
+<div class="modal fade" id="viewUtilityProofModal" tabindex="-1" aria-labelledby="viewUtilityProofModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 rounded-4 shadow-lg">
+            <div class="modal-header border-0 bg-light">
+                <h5 class="modal-title fw-bold">Proof of Utility Billing</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="utilityProofImage" src="" alt="Utility Proof" class="img-fluid rounded-4 shadow-sm">
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- 🧠 Script --}}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const paymentForSelect = document.getElementById('payment_for');
-    const payAmountInput = document.getElementById('pay_amount');
-    const paymentMethodSelect = document.getElementById('payment_method');
+    const paymentFor = document.getElementById('payment_for');
+    const payAmount = document.getElementById('pay_amount');
+    const method = document.getElementById('payment_method');
     const accountField = document.getElementById('accountNumberField');
-    const modal = document.getElementById('makePaymentModal');
 
-    // Disable Rent/Utilities if deposit exists
-    const depositOption = paymentForSelect.querySelector('option[value="Deposit"]');
-    if(depositOption) {
-        Array.from(paymentForSelect.options).forEach(opt => {
-            if(opt.value !== 'Deposit' && opt.value !== 'Other') {
-                opt.disabled = true;
-            }
-        });
-    }
-
-    // Toggle account field
-    paymentMethodSelect.addEventListener('change', () => {
-        accountField.classList.toggle('d-none', !(paymentMethodSelect.value === 'GCash' || paymentMethodSelect.value === 'Bank Transfer'));
+    method.addEventListener('change', () => {
+        accountField.classList.toggle('d-none', !(method.value === 'GCash' || method.value === 'Bank Transfer'));
     });
 
-    // Update amount based on selection
-    function updateAmount() {
-        const selectedOption = paymentForSelect.options[paymentForSelect.selectedIndex];
-        const balance = parseFloat(selectedOption?.dataset.balance || 0);
-        payAmountInput.value = balance > 0 ? balance : '';
-        payAmountInput.min = balance > 0 ? 1 : 0;
-    }
-    paymentForSelect.addEventListener('change', updateAmount);
+    paymentFor.addEventListener('change', () => {
+        const selected = paymentFor.options[paymentFor.selectedIndex];
+        const balance = parseFloat(selected.dataset.balance || 0);
+        payAmount.value = balance > 0 ? balance : '';
+    });
 
-    // Default amount when modal opens
-    modal.addEventListener('show.bs.modal', () => {
-        let defaultOption = paymentForSelect.querySelector('option[value="Deposit"]') ||
-                            paymentForSelect.querySelector('option[value="Rent"]') ||
-                            paymentForSelect.querySelector('option[value="Utilities"]');
-        if(defaultOption) {
-            defaultOption.selected = true;
-            updateAmount();
+    window.viewUtilityProof = function() {
+        const proofPath = '{{ auth()->user()->proof_of_utility_billing ?? '' }}';
+        const proofModal = new bootstrap.Modal(document.getElementById('viewUtilityProofModal'));
+        const img = document.getElementById('utilityProofImage');
+        if (proofPath) {
+            img.src = '{{ asset('storage') }}' + '/' + proofPath;
+            proofModal.show();
+        } else {
+            alert('No proof of utility billing available.');
         }
-    });
+    };
 });
 </script>
+
+{{-- 🌈 Styling --}}
+{{-- 🌈 Custom Styling --}}
+<style>
+    .bg-gradient-warning {
+        background: linear-gradient(135deg, #ffb347, #ffcc33);
+    }
+    .bg-gradient-danger {
+        background: linear-gradient(135deg, #ff5f6d, #ffc371);
+    }
+    .bg-gradient-success {
+        background: linear-gradient(135deg, #11998e, #38ef7d);
+    }
+
+    .card {
+        transition: all 0.3s ease;
+    }
+    .card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    }
+    .table td, .table th {
+        vertical-align: middle;
+    }
+    .table-hover tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+    .btn {
+        transition: all 0.2s ease;
+    }
+    .btn:hover {
+        opacity: .9;
+    }
+</style>
+
 @endsection

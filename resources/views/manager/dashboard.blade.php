@@ -20,7 +20,7 @@
         <div class="card shadow-lg border-0 rounded-4 bg-gradient-primary text-white h-100">
             <div class="card-body text-center">
                 <i class="bi bi-building-check fs-1 mb-2"></i>
-                <h6 class="fw-bold">Total Units</h6>
+                <h6 class="fw-bold text-white">Total Units</h6>
                 <p class="fs-3 fw-semibold mb-0">{{ $totalUnits }}</p>
             </div>
         </div>
@@ -31,7 +31,7 @@
         <div class="card shadow-lg border-0 rounded-4 bg-gradient-success text-white h-100">
             <div class="card-body text-center">
                 <i class="bi bi-house-door-fill fs-1 mb-2"></i>
-                <h6 class="fw-bold">Occupied Units</h6>
+                <h6 class="fw-bold text-white">Occupied Units</h6>
                 <p class="fs-3 fw-semibold mb-0">{{ $occupiedUnits }}</p>
             </div>
         </div>
@@ -39,10 +39,10 @@
 
     <!-- Vacant Units -->
     <div class="col-md-3">
-        <div class="card shadow-lg border-0 rounded-4 bg-gradient-warning text-dark h-100">
+        <div class="card shadow-lg border-0 rounded-4 bg-gradient-warning text-white h-100">
             <div class="card-body text-center">
                 <i class="bi bi-door-closed-fill fs-1 mb-2"></i>
-                <h6 class="fw-bold">Vacant Units</h6>
+                <h6 class="fw-bold text-white">Vacant Units</h6>
                 <p class="fs-3 fw-semibold mb-0">{{ $vacantUnits }}</p>
             </div>
         </div>
@@ -53,25 +53,30 @@
         <div class="card shadow-lg border-0 rounded-4 bg-gradient-info text-white h-100">
             <div class="card-body text-center">
                 <i class="bi bi-clipboard-check-fill fs-1 mb-2"></i>
-                <h6 class="fw-bold">Pending Applications</h6>
+                <h6 class="fw-bold text-white">Pending Applications</h6>
                 <p class="fs-3 fw-semibold mb-0">{{ $pendingApplications }}</p>
             </div>
         </div>
     </div>
 </div>
 
-{{-- Pie Chart --}}
+{{-- Tenant Status Distribution Card --}}
 <div class="card shadow-lg border-0 rounded-4 mb-4">
-    <div class="card-header text-white fw-bold rounded-top-4" 
-         style="background: linear-gradient(135deg, #6c757d, #495057);">
-        <i class="bi bi-pie-chart-fill me-2"></i> Tenant Status Distribution
+    <div class="card-header text-white fw-bold rounded-top-4 d-flex align-items-center justify-content-between"
+         style="background: linear-gradient(135deg, #01017c, #3030d1);">
+        <div class="d-flex align-items-center">
+            <i class="bi bi-pie-chart-fill me-2 fs-4"></i>
+            <span>Tenant Status Distribution</span>
+        </div>
+        <span class="badge bg-light text-dark px-3 py-1">Updated: {{ now()->format('M d, Y') }}</span>
     </div>
-    <div class="card-body">
-        <div style="max-width: 450px; margin:auto;">
+    <div class="card-body d-flex justify-content-center align-items-center py-4">
+        <div style="width: 100%; max-width: 450px;">
             <canvas id="tenantStatusChart"></canvas>
         </div>
     </div>
 </div>
+
 
 {{-- Chart.js --}}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

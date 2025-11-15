@@ -3,10 +3,15 @@
 @section('title', 'My Requests')
 
 @section('content')
-<div class="card mb-4">
-    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+<div class="card mb-4 shadow-sm border-0">
+    <div class="card-header d-flex justify-content-between align-items-center text-white"
+         style="background: linear-gradient(135deg, #01017c, #2e3c90);">
         <span class="fw-bold">Maintenance Requests</span>
-        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createRequestModal">
+        <button
+            class="btn btn-sm text-white fw-semibold"
+            data-bs-toggle="modal"
+            data-bs-target="#createRequestModal"
+            style="background-color: #2e3c90; border: none; border-radius: 8px; padding: 8px 16px;">
             + Create Request
         </button>
     </div>
@@ -21,59 +26,100 @@
 
         @if($requests->isEmpty())
             <div class="text-center py-4 text-muted">
-                <i class="bi bi-exclamation-circle fs-1 mb-2"></i>
+                <i class="bi bi-exclamation-circle fs-1 mb-2 text-primary"></i>
                 <p class="mb-0">No maintenance requests found. Click <strong>"Create Request"</strong> to add one.</p>
             </div>
         @else
-        @if(!$requests->isEmpty())
-            <div class="mb-3 d-flex justify-content-end">
-                <input type="text" id="requestSearch" class="form-control w-25" placeholder="Search requests...">
-            </div>
-        @endif
+        <div class="mb-3 d-flex justify-content-end">
+            <input type="text" id="requestSearch" class="form-control w-25" placeholder="Search requests...">
+        </div>
 
-            <div class="table-responsive">
-                <table class="table table-striped table-hover align-middle text-center">
-                    <thead class="table-light">
-                        <tr>
-                            <th></th>
-                            <th>Date Filed</th>
-                            <th>Unit Type</th>
-                            <th>Room No</th>
-                            <th>Request</th>
-                            <th>Urgency</th>
-                            <th>Supposed Date</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($requests as $request)
-                        @php
-                            $urgencyClass = match($request->urgency) {
-                                'high' => 'bg-danger text-white',
-                                'mid' => 'bg-warning text-dark',
-                                default => 'bg-success text-white',
-                            };
-                            $statusClass = match($request->status) {
-                                'Pending' => 'bg-secondary text-white',
-                                'Accepted' => 'bg-success text-white',
-                                'Rejected' => 'bg-danger text-white',
-                                default => 'bg-secondary',
-                            };
-                        @endphp
-                        <tr @if($request->urgency === 'high') class="table-danger" @endif>
-                            <td>{{ $loop->iteration }}</td>
-                            <td>{{ \Carbon\Carbon::parse($request->created_at)->format('D, M d, Y') }}</td>
-                            <td>{{ $request->unit_type ?? '-' }}</td>
-                            <td>{{ $request->room_no ?? '-' }}</td>
-                            <td>{{ ucfirst($request->description) }}</td>
-                            <td><span class="badge {{ $urgencyClass }}">{{ ucfirst($request->urgency) }}</span></td>
-                            <td>{{ \Carbon\Carbon::parse($request->supposed_date)->format('D, M d, Y') }}</td>
-                            <td><span class="badge {{ $statusClass }}">{{ ucfirst($request->status) }}</span></td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle text-center">
+                <thead style="background-color: #01017c; color: white;">
+                    <tr>
+                        <th>#</th>
+                        <th>Date Filed</th>
+                        <th>Unit Type</th>
+                        <th>Room No</th>
+                        <th>Request</th>
+                        <th>Urgency</th>
+                        <th>Supposed Date</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($requests as $request)
+                    @php
+                        $urgencyClass = match($request->urgency) {
+                            'high' => 'bg-danger text-white',
+                            'mid' => 'bg-warning text-dark',
+                            default => 'bg-success text-white',
+                        };
+                        $statusClass = match($request->status) {
+                            'Pending' => 'bg-secondary text-white',
+                            'Accepted' => 'bg-success text-white',
+                            'Rejected' => 'bg-danger text-white',
+                            'Cancelled' => 'bg-dark text-white',
+                            default => 'bg-secondary',
+                        };
+                    @endphp
+                    <tr>
+                        <td>{{ $loop->iteration }}</td>
+                        <td>{{ \Carbon\Carbon::parse($request->created_at)->format('D, M d, Y') }}</td>
+                        <td>{{ $request->unit_type ?? '-' }}</td>
+                        <td>{{ $request->room_no ?? '-' }}</td>
+                        <td>{{ ucfirst($request->description) }}</td>
+                        <td><span class="badge {{ $urgencyClass }}">{{ ucfirst($request->urgency) }}</span></td>
+                        <td>{{ \Carbon\Carbon::parse($request->supposed_date)->format('D, M d, Y') }}</td>
+                        <td><span class="badge {{ $statusClass }}">{{ ucfirst($request->status) }}</span></td>
+
+                        {{-- Action --}}
+                        <td>
+                            @if(in_array($request->status, ['Pending', 'In Progress']))
+                                <button
+                                    type="button"
+                                    class="btn btn-sm text-white"
+                                    style="background-color: #01017c;"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#cancelRequestModal{{ $request->id }}">
+                                    Cancel
+                                </button>
+                            @else
+                                <span class="text-muted">—</span>
+                            @endif
+                        </td>
+                    </tr>
+
+                    {{-- Cancel Modal --}}
+                    <div class="modal fade" id="cancelRequestModal{{ $request->id }}" tabindex="-1" aria-labelledby="cancelRequestLabel{{ $request->id }}" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content border-0">
+                                <div class="modal-header text-white" style="background-color: #01017c;">
+                                    <h5 class="modal-title" id="cancelRequestLabel{{ $request->id }}">Confirm Cancellation</h5>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body text-center">
+                                    <i class="bi bi-exclamation-triangle text-warning fs-1 mb-3"></i>
+                                    <p>Are you sure you want to cancel this maintenance request?</p>
+                                    <p class="text-muted small">Once cancelled, it cannot be modified.</p>
+                                </div>
+                                <div class="modal-footer justify-content-center">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No, Keep It</button>
+                                    <form action="{{ route('tenant.requests.cancel', $request->id) }}" method="POST">
+                                        @csrf
+                                        @method('PATCH')
+                                        <button type="submit" class="btn text-white" style="background-color: #01017c;">Yes, Cancel</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
         @endif
     </div>
 </div>
@@ -81,9 +127,9 @@
 <!-- Create Request Modal -->
 <div class="modal fade" id="createRequestModal" tabindex="-1" aria-labelledby="createRequestModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <form method="POST" action="{{ route('tenant.requests.store') }}" class="modal-content">
+        <form method="POST" action="{{ route('tenant.requests.store') }}" class="modal-content" enctype="multipart/form-data">
             @csrf
-            <div class="modal-header bg-primary text-white">
+            <div class="modal-header text-white" style="background-color: #01017c;">
                 <h5 class="modal-title" id="createRequestModalLabel">New Maintenance Request</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
@@ -114,11 +160,15 @@
                     <label class="form-label">Supposed Date</label>
                     <input type="date" name="supposed_date" class="form-control" value="{{ old('supposed_date') }}" required>
                 </div>
+                <div class="mb-3">
+                    <label class="form-label">Attach Image (optional)</label>
+                    <input type="file" name="issue_image" class="form-control" accept="image/*">
+                </div>
             </div>
 
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="submit" class="btn btn-success">Submit Request</button>
+                <button type="submit" class="btn text-white" style="background-color: #01017c;">Submit Request</button>
             </div>
         </form>
     </div>
@@ -142,7 +192,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Optional: Simple column sorting
+    // Column sorting
     document.querySelectorAll('table thead th').forEach((th, index) => {
         th.style.cursor = 'pointer';
         th.addEventListener('click', () => {

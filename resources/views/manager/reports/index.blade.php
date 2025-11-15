@@ -1,7 +1,7 @@
 @extends('layouts.managerdashboardlayout')
 
 @section('title', 'Reports')
-@section('page-title', 'Reports')
+@section('page-title', '')
 
 @php
     use Illuminate\Support\Str;
@@ -49,7 +49,7 @@
 
 @section('content')
 <div class="container">
-    <h4 class="mb-4 fw-bold text-primary">📊 Reports Dashboard</h4>
+    <h4 class="mb-4 fw-bold text-dark"> Reports Dashboard</h4>
 
     <div class="row g-4">
         @foreach($reports as $key => $label)
@@ -74,7 +74,7 @@
                     </div>
                 @else
                     <a href="{{ route('manager.reports.show', $key) }}" class="text-decoration-none" aria-label="Open {{ $label }} report">
-                        <div class="card shadow-sm border-0 h-100 report-card" 
+                        <div class="card shadow-sm border-0 h-100 report-card"
                              style="background: {{ $theme['bg'] }}; color: {{ $theme['text'] }}; border-radius: 12px;">
                             <div class="card-body d-flex flex-column justify-content-center align-items-center text-center p-4">
                                 <div class="mb-3">

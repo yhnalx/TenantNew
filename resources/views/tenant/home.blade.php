@@ -13,18 +13,21 @@
         font-weight: 600;
     }
 
-    /* Welcome Section */
+        /* Welcome Section */
     .welcome-title {
-        font-size: 2.2rem;
+        font-size: 2.4rem;
         font-weight: 700;
-        background: linear-gradient(135deg, #0061f2, #4e9cff);
+        background: linear-gradient(135deg, #01017c, #1b2a6d);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
+        text-shadow: 0 2px 6px rgba(0,0,0,0.15);
     }
     .welcome-subtitle {
         font-size: 1.1rem;
-        color: #6c757d;
+        color: #273a8f;
+        margin-top: 0.3rem;
     }
+
 
     /* Cards (Glassmorphism Style) */
     .card-modern {
@@ -42,19 +45,47 @@
 
     .card-modern .card-header {
         border-radius: 1.2rem 1.2rem 0 0;
-        background: linear-gradient(135deg, #0061f2, #4e9cff);
+        background: linear-gradient(135deg, #01017c, #273a8f);
         font-weight: 600;
         font-size: 1.1rem;
+        color: #fff;
     }
+
+    /* Tenant Info Card */
+    .card-tenant-info {
+        border-radius: 1.5rem;
+        background: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(15px);
+        box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+        transition: all 0.3s ease;
+    }
+    .card-tenant-info:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+    }
+    .card-header-tenant {
+        border-radius: 1.5rem 1.5rem 0 0;
+        background: linear-gradient(135deg, #01017c, #273a8f);
+        color: #fff;
+        font-weight: 600;
+        font-size: 1.1rem;
+        padding: 0.85rem 1.25rem;
+    }
+
 
     /* Summary Cards */
     .summary-card {
-        border: none;
-        border-radius: 1rem;
+        border-radius: 1.2rem;
         padding: 2rem 1.5rem;
         color: #fff;
         font-weight: 500;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.08);
         transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    .summary-card:hover {
+        transform: translateY(-6px);
+        filter: brightness(1.05);
     }
     .summary-card h6 {
         font-size: 1rem;
@@ -64,21 +95,6 @@
         font-size: 1.8rem;
         font-weight: 700;
     }
-    .summary-card:hover {
-        transform: translateY(-6px);
-        filter: brightness(1.05);
-    }
-
-    .summary-payments {
-        background: linear-gradient(135deg, #17a2b8, #63d6e5);
-    }
-    .summary-pending {
-        background: linear-gradient(135deg, #ffc107, #ffda6a);
-        color: #333;
-    }
-    .summary-total {
-        background: linear-gradient(135deg, #6c757d, #adb5bd);
-    }
 
     /* Badges */
     .badge-modern {
@@ -86,7 +102,35 @@
         border-radius: 30px;
         font-size: 0.85rem;
         font-weight: 500;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     }
+
+
+    /* Gradient Themes */
+    .summary-payments { background: linear-gradient(135deg, #01017c, #2d3b9a); }
+    .summary-pending  { background: linear-gradient(135deg, #273a8f, #6074c2); }
+    .summary-total    { background: linear-gradient(135deg, #4b5db8, #7c8ed8); }
+
+    /* Navy-Themed Gradients */
+    .summary-payments {
+        background: linear-gradient(135deg, #01017c, #2d3b9a);
+    }
+    .summary-pending {
+        background: linear-gradient(135deg, #273a8f, #6074c2);
+    }
+    .summary-total {
+        background: linear-gradient(135deg, #4b5db8, #7c8ed8);
+    }
+
+    /* Icon tweaks */
+    .card-body i {
+        color: #01017c;
+        font-size: 1.2rem;
+        margin-right: 0.5rem;
+    }
+
+
+
 </style>
 
 @section('content')
@@ -108,8 +152,7 @@
 
     {{-- Tenant Info --}}
     <div class="card shadow-lg border-0 rounded-4 mb-5">
-        <div class="card-header text-white fw-bold rounded-top-4" 
-            style="background: linear-gradient(135deg, #007bff, #0056b3);">
+        <div class="card-header card-header-custom">
             <i class="bi bi-person-badge-fill me-2"></i> Your Information
         </div>
         <div class="card-body p-4">
@@ -117,22 +160,22 @@
                 <!-- Left Column -->
                 <div class="col-md-6">
                     <div class="d-flex align-items-center mb-3">
-                        <i class="bi bi-person-circle text-primary fs-5 me-2"></i>
+                        <i class="bi bi-person-circle fs-5 me-2"></i>
                         <p class="mb-0"><strong>Name:</strong> {{ $user->name }}</p>
                     </div>
                     <div class="d-flex align-items-center mb-3">
-                        <i class="bi bi-envelope-fill text-primary fs-5 me-2"></i>
+                        <i class="bi bi-envelope-fill fs-5 me-2"></i>
                         <p class="mb-0"><strong>Email:</strong> {{ $user->email }}</p>
                     </div>
                     <div class="d-flex align-items-center">
-                        <i class="bi bi-check-circle-fill text-primary fs-5 me-2"></i>
+                        <i class="bi bi-check-circle-fill fs-5 me-2"></i>
                         <p class="mb-0"><strong>Status:</strong>
                             @if($user->status === 'approved')
-                                <span class="badge rounded-pill bg-success px-3 py-2">Approved ✅</span>
+                                <span class="badge badge-modern bg-success">Approved ✅</span>
                             @elseif($user->status === 'pending')
-                                <span class="badge rounded-pill bg-warning text-dark px-3 py-2">Pending ⏳</span>
+                                <span class="badge badge-modern bg-warning text-dark">Pending ⏳</span>
                             @else
-                                <span class="badge rounded-pill bg-danger px-3 py-2">Rejected ❌</span>
+                                <span class="badge badge-modern bg-danger">Rejected ❌</span>
                             @endif
                         </p>
                     </div>
@@ -142,18 +185,18 @@
                 <div class="col-md-6">
                     @if($lease)
                         <div class="d-flex align-items-center mb-3">
-                            <i class="bi bi-building text-primary fs-5 me-2"></i>
+                            <i class="bi bi-building fs-5 me-2 text-primary"></i>
                             <p class="mb-0"><strong>Unit (Room No):</strong> {{ $lease->room_no ?? 'N/A' }}</p>
                         </div>
                         <div class="d-flex align-items-center mb-3">
-                            <i class="bi bi-calendar-event text-primary fs-5 me-2"></i>
-                            <p class="mb-0"><strong>Lease Start:</strong> 
+                            <i class="bi bi-calendar-event fs-5 me-2 text-primary"></i>
+                            <p class="mb-0"><strong>Lease Start:</strong>
                                 {{ optional($lease->lea_start_date)->format('M d, Y') ?? 'N/A' }}
                             </p>
                         </div>
                         <div class="d-flex align-items-center mb-3">
-                            <i class="bi bi-calendar-check text-primary fs-5 me-2"></i>
-                            <p class="mb-0"><strong>Lease End:</strong> 
+                            <i class="bi bi-calendar-check fs-5 me-2 text-primary"></i>
+                            <p class="mb-0"><strong>Lease End:</strong>
                                 {{ optional($lease->lea_end_date)->format('M d, Y') ?? 'N/A' }}
                             </p>
                         </div>
@@ -161,7 +204,7 @@
 
                     @if($application)
                         <div class="d-flex align-items-center">
-                            <i class="bi bi-door-open-fill text-primary fs-5 me-2"></i>
+                            <i class="bi bi-door-open-fill fs-5 me-2 text-primary"></i>
                             <p class="mb-0"><strong>Unit Type:</strong> {{ $application->unit_type ?? 'N/A' }}</p>
                         </div>
                     @endif
@@ -169,8 +212,6 @@
             </div>
         </div>
     </div>
-
-
 
     {{-- Summary Cards --}}
     <div class="row g-4 mb-5">

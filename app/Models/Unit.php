@@ -14,7 +14,8 @@ class Unit extends Model
         'room_no',
         'room_price',
         'status',
-        'property_id', 
+        'property_id',
+        'capacity' 
     ];
 
     // Unit belongs to a Property

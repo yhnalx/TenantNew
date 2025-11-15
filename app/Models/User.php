@@ -24,7 +24,9 @@ class User extends Authenticatable
 
     // ✅ Add tenant financial info to fillable
     protected $fillable = [
-        'name',
+        // 'name',
+        'first_name',
+        'last_name',
         'email',
         'password',
         'role',            // tenant | manager
@@ -33,15 +35,20 @@ class User extends Authenticatable
         'rejection_reason',
 
         // Tenant financial info
-        'rent_amount',     
-        'utility_amount',  
-        'deposit_amount',  
-        'rent_balance',    
+        'rent_amount',
+        'utility_amount',
+        'deposit_amount',
+        'rent_balance',
         'utility_balance',
 
         // tenant payment statuses
         'rental_payment_status',
         'utility_payment_status',
+        'proof_of_utility_billing',
+        'terms_accepted',
+
+        'reset_token',
+        'reset_token_created_at'
     ];
 
     protected $hidden = [
@@ -60,15 +67,18 @@ class User extends Authenticatable
         return $this->hasMany(Lease::class, 'user_id');
     }
 
-    public function properties()
-    {
-        return $this->hasMany(Property::class, 'manager_id');
-    }
+    // public function payments()
+    // {
+    //     return $this->hasMany(Payment::class, 'tenant_id');
+    // }
+    // Old
 
+    // New: payments now go through leases
     public function payments()
     {
-        return $this->hasMany(Payment::class, 'tenant_id');
+        return $this->hasManyThrough(Payment::class, Lease::class, 'user_id', 'lease_id', 'id', 'id');
     }
+
 
     public function maintenanceRequests()
     {
@@ -79,6 +89,7 @@ class User extends Authenticatable
     {
         return $this->hasOne(TenantApplication::class, 'user_id');
     }
+
 
     public function hasCompletedTenantApplication(): bool
     {
@@ -142,4 +153,10 @@ class User extends Authenticatable
             ->where('pay_status', 'Paid')
             ->exists();
     }
+
+    public function getNameAttribute()
+    {
+        return "{$this->first_name} {$this->last_name}";
+    }
+
 }

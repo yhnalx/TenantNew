@@ -17,6 +17,7 @@ class MaintenanceRequest extends Model
         'urgency',
         'supposed_date',
         'status',
+        'issue_image'
     ];
 
 

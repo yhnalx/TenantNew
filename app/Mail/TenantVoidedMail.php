@@ -4,16 +4,12 @@ namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
-use Illuminate\Mail\Mailables\Address;
-use Illuminate\Mail\Mailables\Content;
-use Illuminate\Mail\Mailables\Envelope;
-use Illuminate\Mail\Mailables\Headers;
 use Illuminate\Queue\SerializesModels;
+use App\Models\User;
+use Illuminate\Mail\Mailables\Address;
 use Mailtrap\EmailHeader\CategoryHeader;
 use Mailtrap\EmailHeader\CustomVariableHeader;
 use Symfony\Component\Mime\Email;
-use Symfony\Component\Mime\Header\UnstructuredHeader;
-use App\Models\User;
 
 class TenantVoidedMail extends Mailable
 {
@@ -21,65 +17,38 @@ class TenantVoidedMail extends Mailable
 
     public User $tenant;
 
-    /**
-     * Create a new message instance.
-     */
     public function __construct(User $tenant)
     {
         $this->tenant = $tenant;
     }
 
-    /**
-     * Get the message envelope.
-     */
-    public function envelope(): Envelope
+    public function envelope()
     {
-        return new Envelope(
-            from: new Address('no-reply@yourdomain.com', 'Property Management System'),
-            subject: 'Account Voided - Deposit Not Paid',
+        return new \Illuminate\Mail\Mailables\Envelope(
+            from: new Address('hello@demomailtrap.co', 'Tenant Management'),
+            subject: 'Account Voided Notice',
             using: [
                 function (Email $email) {
-                    // Headers
                     $email->getHeaders()
-                        ->addTextHeader('X-Message-Source', 'yourdomain.com')
-                        ->add(new UnstructuredHeader('X-Mailer', 'Mailtrap PHP Client'));
-
-                    // Optional Custom Variables
-                    $email->getHeaders()
-                        ->add(new CustomVariableHeader('tenant_id', (string) $this->tenant->id));
-
-                    // Category (for Mailtrap or tracking)
-                    $email->getHeaders()
-                        ->add(new CategoryHeader('Tenant Account Notification'));
-                },
+                        ->addTextHeader('X-Mailer', 'Mailtrap PHP Client')
+                        ->add(new CustomVariableHeader('tenant_name', $this->tenant->name))
+                        ->add(new CustomVariableHeader('rent_balance', $this->tenant->rent_balance))
+                        ->add(new CustomVariableHeader('utility_balance', $this->tenant->utility_balance))
+                        ->add(new CategoryHeader('Tenant Voided'));
+                }
             ]
         );
     }
 
-    /**
-     * Get the message content definition.
-     */
-    public function content(): Content
+    public function content()
     {
-        return new Content(
+        return new \Illuminate\Mail\Mailables\Content(
             view: 'emails.tenant_voided',
             with: [
-                'name' => $this->tenant->name,
-                'email' => $this->tenant->email,
-            ],
-        );
-    }
-
-    /**
-     * Get the message headers.
-     */
-    public function headers(): Headers
-    {
-        return new Headers(
-            'custom-message-id@yourdomain.com',
-            [],
-            [
-                'X-Custom-Header' => 'Tenant Voided Notification',
+                'tenantName'    => $this->tenant->name,
+                'rentBalance'   => $this->tenant->rent_balance,
+                'utilityBalance'=> $this->tenant->utility_balance,
+                'status'        => $this->tenant->status,
             ]
         );
     }

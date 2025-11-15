@@ -29,12 +29,12 @@ body {
 
 #dashboardWrapper nav .nav-link:hover {
     background-color: #198754; /* green hover */
-    color: #fff !important;
+    color: #fff;
 }
 
 #dashboardWrapper nav .nav-link.active {
     background-color: #198754; /* active green */
-    color: #fff !important;
+    color: #fff ;
     font-weight: 600;
 }
 
@@ -64,16 +64,16 @@ body {
 }
 
 .card.text-white.bg-info {
-    background-color: #0dcaf0 !important;
+    background-color: #0dcaf0 ;
 }
 
 .card.text-white.bg-warning {
-    background-color: #ffc107 !important;
-    color: #212529 !important;
+    background-color: #ffc107 ;
+    color: #212529 ;
 }
 
 .card.text-white.bg-secondary {
-    background-color: #6c757d !important;
+    background-color: #6c757d;
 }
 
 .card.shadow-sm {
@@ -103,6 +103,6 @@ body {
     }
 
     #dashboardWrapper main {
-        margin-left: 0 !important;
+        margin-left: 0 ;
     }
 }

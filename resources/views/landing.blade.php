@@ -3,15 +3,17 @@
 @section('title', 'Welcome')
 
 @section('content')
+<body style="background-color: #ff6b092c; margin: 0; padding: 0;">
+    <div class="container py-5 text-center">
 <div class="container py-5 text-center">
 
     <!-- Header Section -->
     <div class="mb-5">
         <h1 class="fw-bold display-5 text-dark">
-            🏠 Welcome to <span class="text-primary">Our Apartment Portal</span>
+            Welcome to <span class="text-dark">Pinikitan Rental</span>
         </h1>
         <p class="lead text-muted">
-            Find your next home with ease — we currently have 
+            Find your next home with ease — we currently have
             <strong class="text-success">{{ $vacantCount }}</strong> vacant rooms available.
         </p>
     </div>
@@ -25,19 +27,19 @@
         @foreach($groupedUnits as $type => $typeUnits)
             <div class="col-md-6 col-lg-4">
                 <div class="card h-100 shadow-sm border-0 rounded-4 hover-card unit-card"
-                     data-bs-toggle="modal" 
+                     data-bs-toggle="modal"
                      data-bs-target="#unitModal"
                      data-type="{{ $type }}"
                      data-image="{{ asset('images/units/' . strtolower(str_replace(' ', '-', $type)) . '.jpg') }}"
                      data-available="{{ $typeUnits->where('status', 'vacant')->pluck('room_no')->join(', ') }}"
                      data-price="{{ $typeUnits->first()->room_price ?? 0 }}"
                      data-status="Vacant">
-                    
-                    <img src="{{ asset('images/units/' . strtolower(str_replace(' ', '-', $type)) . '.jpg') }}" 
-                         class="card-img-top rounded-top-4" 
-                         alt="{{ $type }} Image" 
+
+                    <img src="{{ asset('images/units/' . strtolower(str_replace(' ', '-', $type)) . '.jpg') }}"
+                         class="card-img-top rounded-top-4"
+                         alt="{{ $type }} Image"
                          style="height: 180px; object-fit: cover;">
-                    
+
                     <div class="card-body text-center">
                         <h4 class="card-title fw-bold">{{ $type }}</h4>
                         <span class="badge bg-success mb-3">Vacant</span>
@@ -56,9 +58,9 @@
     <section class="py-5 text-center">
         <h2 class="fw-bold text-dark mb-4">About Us</h2>
         <p class="lead text-muted mx-auto" style="max-width: 700px;">
-            Our apartment complex started in <strong>2015</strong> with the goal of providing safe, 
-            affordable, and modern living spaces for students and working professionals. 
-            With well-maintained facilities and accessible locations, we’ve built a community 
+            Our apartment complex started in <strong>2015</strong> with the goal of providing safe,
+            affordable, and modern living spaces for students and working professionals.
+            With well-maintained facilities and accessible locations, we’ve built a community
             where convenience meets comfort.
         </p>
     </section>
@@ -92,8 +94,8 @@
     <section class="py-5">
         <h2 class="fw-bold text-dark mb-4">📌 Find Us Here</h2>
         <div class="ratio ratio-16x9 rounded-4 shadow-sm overflow-hidden">
-            <iframe 
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d62830.16863076383!2d124.6154753!3d8.4542364!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x32fff32a1234567%3A0xabcdef123456789!2sCagayan%20de%20Oro!5e0!3m2!1sen!2sph!4v00000000000!5m2!1sen!2sph" 
+            <iframe
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d829.5969257428177!2d124.65405466128895!3d8.475028046399832!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x32fff2ce448339c1%3A0x639be33dade6bf70!2sR.A.%20VITORILLO%20LAW%20OFFICE%20AND%20ASSOCIATES!5e0!3m2!1sen!2sph!4v1761789546488!5m2!1sen!2sph"
                 style="border:0;" allowfullscreen="" loading="lazy"></iframe>
         </div>
     </section>
@@ -134,36 +136,43 @@
                         <form method="POST" action="{{ route('register.submit') }}" enctype="multipart/form-data">
                             @csrf
                             <div class="row g-3">
-                                <!-- Name & Email -->
+                                <!-- FIRST NAME & LAST NAME -->
                                 <div class="col-md-6">
-                                    <label class="form-label">Name</label>
-                                    <input type="text" name="name" class="form-control" placeholder="Juan Dela Cruz" required>
+                                    <label class="form-label">First Name</label>
+                                    <input type="text" name="first_name" class="form-control" placeholder="Juan" required>
                                 </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Last Name</label>
+                                    <input type="text" name="last_name" class="form-control" placeholder="Dela Cruz" required>
+                                </div>
+
+                                <!-- EMAIL & CONTACT -->
                                 <div class="col-md-6">
                                     <label class="form-label">Email</label>
                                     <input type="email" name="email" class="form-control" placeholder="you@example.com" required>
                                 </div>
-
-                                <!-- Contact & Password -->
                                 <div class="col-md-6">
                                     <label class="form-label">Contact Number</label>
                                     <input type="text" name="contact" class="form-control" placeholder="09XXXXXXXXX" required>
                                 </div>
+
+                                <!-- PASSWORDS -->
                                 <div class="col-md-6">
                                     <label class="form-label">Password</label>
                                     <input type="password" name="password" class="form-control" required>
                                 </div>
-
                                 <div class="col-md-6">
                                     <label class="form-label">Confirm Password</label>
                                     <input type="password" name="password_confirmation" class="form-control" required>
                                 </div>
+
+                                <!-- BIRTHDATE -->
                                 <div class="col-md-6">
                                     <label class="form-label">Birthdate</label>
                                     <input type="date" name="birthdate" class="form-control" required>
                                 </div>
 
-                                <!-- Address & Unit Type -->
+                                <!-- ADDRESS & UNIT TYPE -->
                                 <div class="col-md-6">
                                     <label class="form-label">Current Address</label>
                                     <input type="text" name="current_address" class="form-control" placeholder="Street, City" required>
@@ -173,24 +182,22 @@
                                     <input type="text" name="unit_type" id="unitModalType" class="form-control" readonly>
                                 </div>
 
-                                <!-- ✅ New Room Selection -->
+                                <!-- ✅ FILTERED ROOM SELECTION -->
                                 <div class="col-md-12">
                                     <label class="form-label">Select Room</label>
                                     <select name="unit_id" id="unit_id" class="form-select" required>
                                         <option value="">Select a room</option>
                                         @foreach($availableUnits as $unit)
-                                            <option value="{{ $unit->id }}"
-                                                data-type="{{ $unit->type }}"
-                                                {{ $unit->status === 'occupied' ? 'disabled' : '' }}
-                                                {{ old('unit_id') == $unit->id ? 'selected' : '' }}>
-                                                {{ $unit->room_no }} ({{ $unit->type }})
-                                                @if($unit->status === 'occupied') - Occupied @endif
-                                            </option>
+                                            @if($unit->status === 'vacant')
+                                                <option value="{{ $unit->id }}" data-type="{{ $unit->type }}">
+                                                    {{ $unit->room_no }} ({{ $unit->type }})
+                                                </option>
+                                            @endif
                                         @endforeach
                                     </select>
                                 </div>
 
-                                <!-- Move-in Date & Reason -->
+                                <!-- MOVE-IN DATE & REASON -->
                                 <div class="col-md-6">
                                     <label class="form-label">Preferred Move-in Date</label>
                                     <input type="date" name="move_in_date" class="form-control" required>
@@ -200,7 +207,7 @@
                                     <input type="text" name="reason" class="form-control" placeholder="For work, school, etc." required>
                                 </div>
 
-                                <!-- Employment Info -->
+                                <!-- EMPLOYMENT INFO -->
                                 <div class="col-md-6">
                                     <label class="form-label">Employment Status</label>
                                     <select name="employment_status" class="form-select" required>
@@ -220,7 +227,7 @@
                                     <input type="text" name="source_of_income" class="form-control" required>
                                 </div>
 
-                                <!-- Emergency Contact -->
+                                <!-- EMERGENCY CONTACT -->
                                 <div class="col-md-6">
                                     <label class="form-label">Emergency Contact Name</label>
                                     <input type="text" name="emergency_name" class="form-control" required>
@@ -234,7 +241,7 @@
                                     <input type="text" name="emergency_relationship" class="form-control" required>
                                 </div>
 
-                                <!-- File Uploads -->
+                                <!-- FILE UPLOADS -->
                                 <div class="col-md-6">
                                     <label class="form-label">Valid ID</label>
                                     <input type="file" name="valid_id" class="form-control" accept=".jpg,.jpeg,.png,.pdf" required>
@@ -331,6 +338,25 @@ document.addEventListener('DOMContentLoaded', function() {
             zoomModal.show();
         };
     });
+
+    // Filter available rooms by unit type dynamically
+    unitModalEl.addEventListener('show.bs.modal', event => {
+        const card = event.relatedTarget;
+        const type = card.dataset.type;
+        const select = document.getElementById('unit_id');
+
+        // Reset room list
+        [...select.options].forEach(opt => {
+            if (opt.value === "") return; // Skip "Select a room"
+            const matchesType = opt.dataset.type === type;
+            opt.hidden = !matchesType; // Hide rooms that don't match
+        });
+
+        // Automatically select blank option
+        select.value = "";
+    });
+
+
 });
 </script>
 @endpush

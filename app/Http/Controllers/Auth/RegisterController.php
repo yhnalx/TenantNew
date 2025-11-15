@@ -13,7 +13,7 @@ class RegisterController extends Controller
 {
     public function index()
     {
-        $unitTypes = ['Studio', '1-Bedroom', '2-Bedroom', 'Commercial'];
+        $unitTypes = ['Studio', '1-Bedroom', '2-Bedroom', 'Commercial', 'Bed-Spacer'];
         $availableUnits = Unit::where('status', 'vacant')->get();
 
         return view('auth.register', compact('unitTypes', 'availableUnits'));
@@ -24,8 +24,9 @@ class RegisterController extends Controller
         // Validate input
         $request->validate([
             // User info
-            'name'     => 'required|string|max:255',
-            'email'    => 'required|email|unique:users,email',
+            'first_name' => 'required|string|max:255',
+            'last_name'  => 'required|string|max:255',
+            'email'    => 'required|email',
             'contact'  => 'required|digits_between:10,15',
             'password' => [
                 'required','string','min:8','confirmed',
@@ -63,18 +64,20 @@ class RegisterController extends Controller
 
         // Create user
         $user = User::create([
-            'name'           => $request->name,
+            'first_name'     => $request->first_name,
+            'last_name'      => $request->last_name,
             'email'          => $request->email,
             'contact_number' => $request->contact,
             'password'       => Hash::make($request->password),
             'role'           => 'tenant',
             'status'         => 'pending',
+            'terms_accepted' => true,
         ]);
 
         // Create tenant application
         TenantApplication::create([
             'user_id'               => $user->id,
-            'full_name'             => $request->name,
+            'full_name'      => $request->first_name . ' ' . $request->last_name,
             'email'                 => $request->email,
             'contact_number'        => $request->contact,
             'current_address'       => $request->current_address,

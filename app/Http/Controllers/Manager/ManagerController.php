@@ -3,37 +3,196 @@
 namespace App\Http\Controllers\Manager;
 
 use App\Http\Controllers\Controller;
+use App\Mail\TenantApprovedMail;
+use App\Mail\TenantPaymentReminderMail;
+use App\Mail\TenantRejectedMail;
 use App\Models\Lease;
+use App\Models\Notification;
 use App\Models\Unit;
 use App\Models\User;
+use App\Services\SmsService;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Http\Request;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Log;
 
 class ManagerController extends Controller
 {
+    protected SmsService $smsService;
+
+    public function __construct()
+    {
+        $this->smsService = new SmsService();
+    }
+
+    protected function normalizePhoneNumber(?string $number): ?string
+    {
+        if (!$number) return null;
+
+        $number = preg_replace('/\D/', '', $number); // remove non-numeric characters
+
+        if (str_starts_with($number, '0')) {
+            return '+63' . substr($number, 1);
+        } elseif (str_starts_with($number, '63')) {
+            return '+' . $number;
+        } elseif (str_starts_with($number, '+63')) {
+            return $number;
+        }
+
+        // fallback: assume it's a 10-digit local number
+        return '+63' . $number;
+    }
+
     /**
      * Show all tenants grouped by status
      */
-    public function tenants()
+    // public function tenants()
+    // {
+    //     $pendingTenants = User::where('role', 'tenant')
+    //         ->where('status', 'pending')
+    //         ->get();
+
+    //     $approvedTenantList = User::where('role', 'tenant')
+    //         ->where('status', 'approved')
+    //         ->get();
+
+    //     $rejectedTenantList = User::where('role', 'tenant')
+    //         ->where('status', operator: 'rejected')
+    //         ->get();
+
+    //     return view('manager.tenants', compact(
+    //         'pendingTenants',
+    //         'approvedTenantList',
+    //         'rejectedTenantList'
+    //     ));
+    // }
+
+   public function notifyTenant($id)
     {
-        $pendingTenants = User::where('role', 'tenant')
-            ->where('status', 'pending')
-            ->get();
+        $tenant = User::findOrFail($id);
 
-        $approvedTenantList = User::where('role', 'tenant')
-            ->where('status', 'approved')
-            ->get();
+        if ($tenant->status !== 'approved') {
+            return redirect()->back()->with('error', 'Only approved tenants can be notified.');
+        }
 
-        $rejectedTenantList = User::where('role', 'tenant')
-            ->where('status', 'rejected')
-            ->get();
+        try {
+            Mail::to($tenant->email)->send(new TenantPaymentReminderMail($tenant));
+        } catch (\Exception $e) {
+            Log::error("❌ Failed to send payment reminder email to {$tenant->email}: {$e->getMessage()}");
+            return redirect()->back()->with('error', 'Failed to send email: ' . $e->getMessage());
+        }
+
+        return redirect()->back()->with('success', 'Payment reminder sent to ' . $tenant->name);
+    }
+
+
+    public function exportTenantsPdf(Request $request)
+    {
+        $filter = $request->get('filter', 'all');
+
+        $query = User::with(['tenantApplication', 'leases'])
+            ->where('role', 'tenant');
+
+        if ($filter !== 'all') {
+            $query->where('status', $filter);
+        }
+
+        $tenants = $query->get();
+
+        $pdf = Pdf::loadView('reports.pdf.tenants-filtered', [
+            'tenants' => $tenants,
+            'filter' => $filter,
+            'generatedAt' => now()->format('Y-m-d H:i:s')
+        ])->setPaper('a4', 'landscape');
+
+        return $pdf->stream("tenant-report-{$filter}.pdf");
+    }
+
+    public function tenants(Request $request)
+    {
+        // Capture filter and search (default: all for filter, empty for search)
+        $filter = $request->query('filter', 'all');
+        $search = $request->query('search', '');
+
+        // Base query for tenants
+        $query = User::where('role', 'tenant');
+
+        // Apply status filter if specified
+        if ($filter !== 'all') {
+            $query->where('status', $filter);
+        }
+
+        // ✅ Apply search filter (by full_name in tenant_applications)
+        if (!empty($search)) {
+            $query->whereHas('tenantApplication', function($q) use ($search) {
+                $q->where('full_name', 'like', "%{$search}%");
+            });
+        }
+
+        // Group by status for easy section display (these can stay as-is, but we'll use $filteredTenants for display)
+        $pendingTenants = User::where('role', 'tenant')->where('status', 'pending')->get();
+        $approvedTenantList = User::where('role', 'tenant')->where('status', 'approved')->get();
+        $rejectedTenantList = User::where('role', 'tenant')->where('status', 'rejected')->get();
+
+        // Filtered results for card display (now includes search)
+        $filteredTenants = $query->get();
 
         return view('manager.tenants', compact(
             'pendingTenants',
             'approvedTenantList',
-            'rejectedTenantList'
+            'rejectedTenantList',
+            'filteredTenants',
+            'filter',
+            'search'  // Pass search to the view for form pre-fill
         ));
     }
+    // public function tenants(Request $request)
+    // {
+    //     // Capture filter (default: all)
+    //     $filter = $request->query('filter', 'all');
+
+    //     // Base query for tenants
+    //     $query = User::where('role', 'tenant');
+
+    //     // Apply filter if specified
+    //     if ($filter !== 'all') {
+    //         $query->where('status', $filter);
+    //     }
+
+    //     // Group by status for easy section display
+    //     $pendingTenants = User::where('role', 'tenant')->where('status', 'pending')->get();
+    //     $approvedTenantList = User::where('role', 'tenant')->where('status', 'approved')->get();
+    //     $rejectedTenantList = User::where('role', 'tenant')->where('status', 'rejected')->get();
+
+    //     // Filtered results for card display
+    //     $filteredTenants = $query->get();
+
+    //     return view('manager.tenants', compact(
+    //         'pendingTenants',
+    //         'approvedTenantList',
+    //         'rejectedTenantList',
+    //         'filteredTenants',
+    //         'filter'
+    //     ));
+    // }
+
+    // public function filterTenants(Request $request)
+    // {
+    //     $filter = $request->input('filter', 'all');
+    //     $query = User::where('role', 'tenant');
+
+    //     if ($filter !== 'all') {
+    //         $query->where('status', $filter);
+    //     }
+
+    //     $tenants = $query->get();
+
+    //     return response()->json([
+    //         'html' => view('partials.tenants_table', compact('tenants'))->render()
+    //     ]);
+    // }
+
 
     /**
      * Approve a tenant application
@@ -131,6 +290,173 @@ class ManagerController extends Controller
     //     return redirect()->back()->with('success', 'Tenant approved successfully. Lease and financial info initialized, and unit marked as occupied.');
     // }
 
+    // public function approve($id)
+    // {
+    //     $user = User::find($id);
+
+    //     if (!$user || $user->role !== 'tenant') {
+    //         return redirect()->back()->with('error', 'Invalid tenant.');
+    //     }
+
+    //     $tenantApp = $user->tenantApplication;
+
+    //     if (!$tenantApp) {
+    //         return redirect()->back()->with('error', 'Tenant application not found.');
+    //     }
+
+    //     // Approve tenant
+    //     $user->status = 'approved';
+    //     $user->rejection_reason = null;
+    //     $user->save();
+
+    //     // Lease period
+    //     $startDate = Carbon::today();
+    //     $endDate   = $startDate->copy()->addYear();
+
+    //     // Lease duration text
+    //     $leaseTermText = sprintf(
+    //         '1 Year Lease (%s – %s)',
+    //         $startDate->format('M d, Y'),
+    //         $endDate->format('M d, Y')
+    //     );
+
+    //     // Assign unit
+    //     $unit = Unit::find($tenantApp->unit_id);
+
+    //     if (!$unit) {
+    //         return redirect()->back()->with('error', 'Selected unit not found.');
+    //     }
+
+    //     // Mark unit as occupied
+    //     $unit->status = 'occupied';
+    //     $unit->save();
+
+    //     // Create Lease
+    //     $lease = Lease::create([
+    //         'user_id'        => $user->id,
+    //         'unit_id'        => $unit->id,
+    //         'lea_start_date' => $startDate,
+    //         'lea_end_date'   => $endDate,
+    //         'lea_status'     => 'active',
+    //         'room_no'        => $unit->room_no,
+    //         'lea_terms'      => $leaseTermText, // ✅ Added lease term text
+    //     ]);
+
+    //     // Determine unit type and rent
+    //     $unitType = $tenantApp->unit_type ?? 'Studio';
+    //     $monthlyRent = 0;
+    //     $depositAmount = 0;
+    //     $monthlyUtilities = 0;
+
+    //     switch ($unitType) {
+    //         case 'Studio':
+    //             $monthlyRent = 7500;
+    //             break;
+    //         case 'One Bedroom':
+    //             $monthlyRent = 10000;
+    //             break;
+    //         case 'Two Bedroom':
+    //             $monthlyRent = 12000;
+    //             break;
+    //         default:
+    //             $monthlyRent = 7500;
+    //     }
+
+    //     // Deposit = 1 month rent + 1 month advance rent
+    //     $depositAmount = $monthlyRent * 2;
+
+    //     // Update tenant financial info
+    //     $user->rent_amount     = $monthlyRent;
+    //     $user->utility_amount  = $monthlyUtilities;
+    //     $user->deposit_amount  = $depositAmount;
+    //     $user->rent_balance    = $depositAmount;
+    //     $user->utility_balance = $monthlyUtilities;
+    //     $user->save();
+
+    //     return redirect()->back()->with('success', 'Tenant approved successfully. Lease and financial info initialized, and unit marked as occupied.');
+    // }
+
+    // With e-mail this time T_T
+    // public function approve($id)
+    // {
+    //     $user = User::find($id);
+
+    //     if (!$user || $user->role !== 'tenant') {
+    //         return redirect()->back()->with('error', 'Invalid tenant.');
+    //     }
+
+    //     $tenantApp = $user->tenantApplication;
+
+    //     if (!$tenantApp) {
+    //         return redirect()->back()->with('error', 'Tenant application not found.');
+    //     }
+
+    //     // Approve tenant
+    //     $user->status = 'approved';
+    //     $user->rejection_reason = null;
+    //     $user->save();
+
+    //     // Lease period
+    //     $startDate = Carbon::today();
+    //     $endDate   = $startDate->copy()->addYear();
+
+    //     $leaseTermText = sprintf(
+    //         '1 Year Lease (%s – %s)',
+    //         $startDate->format('M d, Y'),
+    //         $endDate->format('M d, Y')
+    //     );
+
+    //     // Assign unit
+    //     $unit = Unit::find($tenantApp->unit_id);
+    //     if (!$unit) {
+    //         return redirect()->back()->with('error', 'Selected unit not found.');
+    //     }
+
+    //     $unit->status = 'occupied';
+    //     $unit->save();
+
+    //     // Create Lease
+    //     $lease = Lease::create([
+    //         'user_id'        => $user->id,
+    //         'unit_id'        => $unit->id,
+    //         'lea_start_date' => $startDate,
+    //         'lea_end_date'   => $endDate,
+    //         'lea_status'     => 'active',
+    //         'room_no'        => $unit->room_no,
+    //         'lea_terms'      => $leaseTermText,
+    //     ]);
+
+    //     // Determine rent and deposit
+    //     $unitType = $tenantApp->unit_type ?? 'Studio';
+    //     $monthlyRent = match($unitType) {
+    //         'Studio' => 7500,
+    //         'One Bedroom' => 10000,
+    //         'Two Bedroom' => 12000,
+    //         default => 7500,
+    //     };
+    //     $depositAmount = $monthlyRent * 2;
+    //     $monthlyUtilities = 0;
+
+    //     // Update tenant financial info
+    //     $user->update([
+    //         'rent_amount'     => $monthlyRent,
+    //         'utility_amount'  => $monthlyUtilities,
+    //         'deposit_amount'  => $depositAmount,
+    //         'rent_balance'    => $depositAmount,
+    //         'utility_balance' => $monthlyUtilities,
+    //     ]);
+
+    //     // ✅ Send Approval Email
+    //     try {
+    //         Mail::to($user->email)->send(new TenantApprovedMail($user, $lease));
+    //         // $this->info("📩 Approval email sent to {$user->email}");
+    //     } catch (\Exception $e) {
+    //         \Log::error("❌ Failed to send tenant approval email to {$user->email}: {$e->getMessage()}");
+    //     }
+
+    //     return redirect()->back()->with('success', 'Tenant approved successfully. Lease and financial info initialized, and unit marked as occupied.');
+    // }
+
     public function approve($id)
     {
         $user = User::find($id);
@@ -154,7 +480,6 @@ class ManagerController extends Controller
         $startDate = Carbon::today();
         $endDate   = $startDate->copy()->addYear();
 
-        // Lease duration text
         $leaseTermText = sprintf(
             '1 Year Lease (%s – %s)',
             $startDate->format('M d, Y'),
@@ -163,12 +488,10 @@ class ManagerController extends Controller
 
         // Assign unit
         $unit = Unit::find($tenantApp->unit_id);
-
         if (!$unit) {
             return redirect()->back()->with('error', 'Selected unit not found.');
         }
 
-        // Mark unit as occupied
         $unit->status = 'occupied';
         $unit->save();
 
@@ -180,39 +503,50 @@ class ManagerController extends Controller
             'lea_end_date'   => $endDate,
             'lea_status'     => 'active',
             'room_no'        => $unit->room_no,
-            'lea_terms'      => $leaseTermText, // ✅ Added lease term text
+            'lea_terms'      => $leaseTermText,
         ]);
 
-        // Determine unit type and rent
+        // Determine rent and deposit
         $unitType = $tenantApp->unit_type ?? 'Studio';
-        $monthlyRent = 0;
-        $depositAmount = 0;
+        $monthlyRent = match($unitType) {
+            'Studio' => 7500,
+            'One Bedroom' => 10000,
+            'Two Bedroom' => 12000,
+            default => 7500,
+        };
+        $depositAmount = $monthlyRent * 2;
         $monthlyUtilities = 0;
 
-        switch ($unitType) {
-            case 'Studio':
-                $monthlyRent = 7500;
-                break;
-            case 'One Bedroom':
-                $monthlyRent = 10000;
-                break;
-            case 'Two Bedroom':
-                $monthlyRent = 12000;
-                break;
-            default:
-                $monthlyRent = 7500;
+        // Update tenant financial info
+        $user->update([
+            'rent_amount'     => $monthlyRent,
+            'utility_amount'  => $monthlyUtilities,
+            'deposit_amount'  => $depositAmount,
+            'rent_balance'    => $depositAmount,
+            'utility_balance' => $monthlyUtilities,
+        ]);
+
+        Notification::create([
+            'user_id' => $user->id,
+            'title' => 'Application Approved',
+            'message' => 'Congratulations! Your tenant application has been approved.',
+        ]);
+
+        // ✅ Send Approval Email
+        try {
+            Mail::to($user->email)->send(new TenantApprovedMail($user, $lease));
+        } catch (\Exception $e) {
+            Log::error("❌ Failed to send tenant approval email to {$user->email}: {$e->getMessage()}");
         }
 
-        // Deposit = 1 month rent + 1 month advance rent
-        $depositAmount = $monthlyRent * 2;
+        // ✅ Send Approval SMS
+        $contactNumber = $this->normalizePhoneNumber($tenantApp->contact_number);
 
-        // Update tenant financial info
-        $user->rent_amount     = $monthlyRent;
-        $user->utility_amount  = $monthlyUtilities;
-        $user->deposit_amount  = $depositAmount;
-        $user->rent_balance    = $depositAmount;
-        $user->utility_balance = $monthlyUtilities;
-        $user->save();
+        if ($contactNumber) {
+            $approvalMessage = "Hello {$user->name}, your application has been APPROVED! "
+                . "Your lease for room {$unit->room_no} starts {$startDate->format('M d, Y')}.";
+            $this->smsService->send($contactNumber, $approvalMessage);
+        }
 
         return redirect()->back()->with('success', 'Tenant approved successfully. Lease and financial info initialized, and unit marked as occupied.');
     }
@@ -221,30 +555,103 @@ class ManagerController extends Controller
     /**
      * Reject a tenant application
      */
+    // public function reject(Request $request)
+    // {
+    //     // Validate incoming request
+    //     $request->validate([
+    //         'tenant_id' => 'required|exists:users,id',
+    //         'rejection_reason' => 'required|string|max:255',
+    //     ]);
+
+    //     // Find tenant by ID from hidden field
+    //     $tenant = User::find($request->tenant_id);
+
+    //     // Ensure tenant exists and is role=tenant
+    //     if (!$tenant || $tenant->role !== 'tenant') {
+    //         return redirect()->back()->with('error', 'Invalid tenant.');
+    //     }
+
+    //     // Update status and reason
+    //     $tenant->status = 'rejected';
+    //     $tenant->rejection_reason = $request->rejection_reason;
+    //     $tenant->save();
+
+    //     return redirect()->back()->with('warning', 'Tenant rejected successfully.');
+    // }
+
+    // With reject this time
     public function reject(Request $request)
     {
-        // Validate incoming request
         $request->validate([
             'tenant_id' => 'required|exists:users,id',
             'rejection_reason' => 'required|string|max:255',
         ]);
 
-        // Find tenant by ID from hidden field
         $tenant = User::find($request->tenant_id);
 
-        // Ensure tenant exists and is role=tenant
         if (!$tenant || $tenant->role !== 'tenant') {
             return redirect()->back()->with('error', 'Invalid tenant.');
         }
 
-        // Update status and reason
         $tenant->status = 'rejected';
         $tenant->rejection_reason = $request->rejection_reason;
         $tenant->save();
 
+        // ✅ Send Rejection Email
+        try {
+            Mail::to($tenant->email)->send(new TenantRejectedMail($tenant));
+        } catch (\Exception $e) {
+            Log::error("❌ Failed to send tenant rejection email to {$tenant->email}: {$e->getMessage()}");
+        }
+
+        // ✅ Send Rejection SMS
+        $tenantApp = $tenant->tenantApplication;
+        $contactNumber = $this->normalizePhoneNumber($tenantApp->contact_number ?? null);
+
+        if ($contactNumber) {
+            $rejectionMessage = "TenantMS\n,Hello {$tenant->name}, your application has been REJECTED. "
+                . "Reason: {$tenant->rejection_reason}";
+            $this->smsService->send($contactNumber, $rejectionMessage);
+        }
+
         return redirect()->back()->with('warning', 'Tenant rejected successfully.');
     }
 
+    // public function viewIds($id)
+    // {
+    //     $tenant = User::with('tenantApplication')->findOrFail($id);
 
+    //     if (!$tenant->tenantApplication ||
+    //         !$tenant->tenantApplication->valid_id_path ||
+    //         !$tenant->tenantApplication->id_picture_path) {
+    //         abort(404, 'Tenant has no uploaded IDs.');
+    //     }
+
+    //     $pdf = Pdf::loadView('reports.pdf.tenant-ids', [
+    //         'tenant' => $tenant,
+    //         'validId' => $tenant->tenantApplication->valid_id_path,
+    //         'idPicture' => $tenant->tenantApplication->id_picture_path,
+    //     ])->setPaper('a4', 'portrait');
+
+    //     return $pdf->stream("tenant-ids-{$tenant->id}.pdf");
+    // }
+
+    public function viewIds($id)
+    {
+        $tenant = User::with('tenantApplication.unit')->findOrFail($id);
+
+        if (!$tenant->tenantApplication) {
+            abort(404, 'Tenant has no application data.');
+        }
+
+        $tenantApp = $tenant->tenantApplication;
+
+        $pdf = Pdf::loadView('reports.pdf.tenant-full-info', [
+            'tenant' => $tenant,
+            'tenantApp' => $tenantApp,
+        ])->setPaper('a4', 'portrait');
+
+        return $pdf->stream("tenant-info-{$tenant->id}.pdf");
+    }
 
 }

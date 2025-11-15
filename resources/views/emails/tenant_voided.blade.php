@@ -19,6 +19,12 @@
         h2 {
             color: #dc3545;
         }
+        ul {
+            padding-left: 20px;
+        }
+        li {
+            margin-bottom: 5px;
+        }
         .footer {
             margin-top: 25px;
             font-size: 13px;
@@ -32,9 +38,17 @@
     <h2>Account Voided</h2>
     <p>Dear {{ $tenant->name }},</p>
     <p>Your account has been <strong>voided</strong> because your deposit payment was not completed within 7 days of registration.</p>
+
+    <ul>
+        <li>Rent Balance: ₱{{ number_format($tenant->rent_balance, 2) }}</li>
+        <li>Utility Balance: ₱{{ number_format($tenant->utility_balance, 2) }}</li>
+        <li>Current Status: {{ ucfirst($tenant->status) }}</li>
+    </ul>
+
     <p>If you believe this is an error, please contact our management office immediately.</p>
     <p>Thank you for your understanding.</p>
     <p>— Property Management</p>
+
     <div class="footer">
         <p>This is an automated message. Please do not reply.</p>
     </div>

@@ -11,85 +11,15 @@
         <h4 class="fw-bold text-secondary mb-0">
             <i class="bi bi-bar-chart-line me-2"></i> {{ $title }}
         </h4>
-        <a href="{{ route('manager.reports.export', array_merge(['report' => $report], request()->all())) }}" 
-           class="btn btn-success btn-sm shadow-sm">
-            <i class="bi bi-file-earmark-arrow-down me-1"></i> Export CSV
+
+        {{-- Export / Preview PDF button --}}
+        <a href="{{ route('manager.reports.viewReportPdf', array_merge(['report' => $report], request()->all())) }}"
+        target="_blank"
+        class="btn btn-danger btn-sm shadow-sm d-flex align-items-center">
+            <i class="bi bi-file-earmark-pdf me-1"></i> Export / Preview PDF
         </a>
     </div>
     <hr>
-
-    {{-- ---------------- FILTER SECTION ---------------- --}}
-    @if(in_array($report, ['active-tenants', 'pending-tenants', 'rejected-tenants', 'maintenance-requests', 'payment-history']))
-        <div class="card shadow-sm mb-4 border-0">
-            <div class="card-header bg-light fw-bold">
-                <i class="bi bi-funnel-fill me-2 text-primary"></i> Filters
-            </div>
-            <div class="card-body">
-                <form method="GET" action="{{ route('manager.reports.show', ['report' => $report]) }}" class="row gy-2 gx-3 align-items-center">
-                    
-                    {{-- Payment History Filters --}}
-                    @if($report === 'payment-history')
-                        <div class="col-md-3">
-                            <label for="payment_for" class="form-label fw-semibold">Purpose</label>
-                            <select name="payment_for" id="payment_for" class="form-select" onchange="this.form.submit()">
-                                <option value="">All</option>
-                                <option value="rent" {{ request('payment_for') === 'rent' ? 'selected' : '' }}>Rent</option>
-                                <option value="utilities" {{ request('payment_for') === 'utilities' ? 'selected' : '' }}>Utilities</option>
-                                <option value="others" {{ request('payment_for') === 'others' ? 'selected' : '' }}>Others</option>
-                            </select>
-                        </div>
-
-                    {{-- Maintenance Filters --}}
-                    @elseif($report === 'maintenance-requests')
-                        <div class="col-md-3">
-                            <label for="status" class="form-label fw-semibold">Status</label>
-                            <select name="status" id="status" class="form-select" onchange="this.form.submit()">
-                                <option value="">All</option>
-                                <option value="Pending" {{ request('status') === 'Pending' ? 'selected' : '' }}>Pending</option>
-                                <option value="In Progress" {{ request('status') === 'In Progress' ? 'selected' : '' }}>In Progress</option>
-                                <option value="Completed" {{ request('status') === 'Completed' ? 'selected' : '' }}>Completed</option>
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <label for="urgency" class="form-label fw-semibold">Urgency</label>
-                            <select name="urgency" id="urgency" class="form-select" onchange="this.form.submit()">
-                                <option value="">All</option>
-                                <option value="low" {{ request('urgency') === 'low' ? 'selected' : '' }}>Low</option>
-                                <option value="mid" {{ request('urgency') === 'mid' ? 'selected' : '' }}>Mid</option>
-                                <option value="high" {{ request('urgency') === 'high' ? 'selected' : '' }}>High</option>
-                            </select>
-                        </div>
-
-                    {{-- Active Tenants Filters --}}
-                    @elseif($report === 'active-tenants')
-                        <div class="col-md-3">
-                            <label for="unit_type" class="form-label fw-semibold">Unit Type</label>
-                            <select name="unit_type" id="unit_type" class="form-select" onchange="this.form.submit()">
-                                <option value="">All</option>
-                                @foreach(\App\Models\TenantApplication::select('unit_type')->distinct()->get() as $unit)
-                                    <option value="{{ $unit->unit_type }}" {{ request('unit_type') === $unit->unit_type ? 'selected' : '' }}>
-                                        {{ $unit->unit_type }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <div class="col-md-3">
-                            <label for="employment_status" class="form-label fw-semibold">Employment Status</label>
-                            <select name="employment_status" id="employment_status" class="form-select" onchange="this.form.submit()">
-                                <option value="">All</option>
-                                @foreach(\App\Models\TenantApplication::select('employment_status')->distinct()->get() as $emp)
-                                    <option value="{{ $emp->employment_status }}" {{ request('employment_status') === $emp->employment_status ? 'selected' : '' }}>
-                                        {{ $emp->employment_status }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                    @endif
-                </form>
-            </div>
-        </div>
-    @endif
 
     {{-- ---------------- SUMMARY ---------------- --}}
     <div class="card shadow-sm mb-4 border-0">
@@ -108,10 +38,10 @@
                     @if($report === 'payment-history')
                         Showing: <strong>{{ $currentFilter ? ucfirst($currentFilter) : 'All Categories' }}</strong>
                     @elseif($report === 'maintenance-requests')
-                        Status: <strong>{{ request('status') ?: 'All' }}</strong> | 
+                        Status: <strong>{{ request('status') ?: 'All' }}</strong> |
                         Urgency: <strong>{{ request('urgency') ?: 'All' }}</strong>
                     @elseif($report === 'active-tenants')
-                        Unit Type: <strong>{{ request('unit_type') ?: 'All' }}</strong> | 
+                        Unit Type: <strong>{{ request('unit_type') ?: 'All' }}</strong> |
                         Employment Status: <strong>{{ request('employment_status') ?: 'All' }}</strong>
                     @else
                         Total Records
@@ -130,6 +60,124 @@
         </div>
     </div>
 
+    {{-- ---------------- FILTER SECTION ---------------- --}}
+    @if(in_array($report, ['active-tenants', 'pending-tenants', 'rejected-tenants', 'maintenance-requests', 'payment-history', 'lease-summary']))
+    <div class="filter-bar mb-4">
+        <div class="bg-white p-3 rounded-4 shadow-sm border">
+            <form method="GET" action="{{ route('manager.reports.show', ['report' => $report]) }}" class="row gy-3 gx-3 align-items-center">
+
+                {{-- Payment History Filters --}}
+                @if($report === 'payment-history')
+                    <div class="col-md-8">
+                        <label for="search" class="fw-semibold text-secondary mb-1">
+                            <i class="bi bi-credit-card-fill text-primary me-1"></i> Search Payments
+                        </label>
+                        <div class="input-group input-group-sm">
+                            <input type="text" name="search" id="search"
+                                class="form-control rounded-start-pill border-end-0 shadow-sm"
+                                placeholder="Search by payment purpose (e.g., rent, utilities)..."
+                                value="{{ request('search') }}">
+                            <button class="btn btn-primary rounded-end-pill px-3">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </div>
+                        <small class="text-muted">Type a keyword and press Enter or click Search.</small>
+                    </div>
+
+                {{-- Maintenance Filters --}}
+                @elseif($report === 'maintenance-requests')
+                    <div class="col-md-8">
+                        <label for="search" class="fw-semibold text-secondary mb-1">
+                            <i class="bi bi-tools text-primary me-1"></i> Search Maintenance Request
+                        </label>
+                        <div class="input-group input-group-sm">
+                            <input type="text" name="search" id="search"
+                                class="form-control rounded-start-pill border-end-0 shadow-sm"
+                                placeholder="Search by issue, tenant name, status, or urgency..."
+                                value="{{ request('search') }}">
+                            <button class="btn btn-primary rounded-end-pill px-3">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </div>
+                        <small class="text-muted">Type a keyword and press Enter or click Search.</small>
+                    </div>
+
+                {{-- Active Tenants Filters --}}
+                @elseif($report === 'active-tenants')
+                    <div class="col-md-8">
+                        <label for="search" class="fw-semibold text-secondary mb-1">
+                            <i class="bi bi-people-fill text-primary me-1"></i> Search Active Tenants
+                        </label>
+                        <div class="input-group input-group-sm">
+                            <input type="text" name="search" id="search"
+                                class="form-control rounded-start-pill border-end-0 shadow-sm"
+                                placeholder="Search by tenant name, unit type, or employment status..."
+                                value="{{ request('search') }}">
+                            <button class="btn btn-primary rounded-end-pill px-3">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </div>
+                        <small class="text-muted">Type a keyword and press Enter or click Search.</small>
+                    </div>
+
+                {{-- Lease Summary Filters --}}
+                @elseif($report === 'lease-summary')
+                    <div class="col-md-8">
+                        <label for="search" class="fw-semibold text-secondary mb-1">
+                            <i class="bi bi-file-text-fill text-primary me-1"></i> Search Leases
+                        </label>
+                        <div class="input-group input-group-sm">
+                            <input type="text" name="search" id="search"
+                                class="form-control rounded-start-pill border-end-0 shadow-sm"
+                                placeholder="Search by tenant name..."
+                                value="{{ request('search') }}">
+                            <button class="btn btn-primary rounded-end-pill px-3">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </div>
+                        <small class="text-muted">Type a keyword and press Enter or click Search.</small>
+                    </div>
+                @endif
+
+                {{-- Export Button (Optional, visible for relevant reports) --}}
+                @if(in_array($report, ['payment-history', 'maintenance-requests', 'lease-summary', 'active-tenants']))
+                    <div class="col-md-auto ms-auto">
+                        <a href="{{ route('manager.reports.export', ['report' => $report, 'search' => request('search')]) }}"
+                            target="_blank"
+                            class="btn btn-outline-danger btn-sm d-flex align-items-center gap-2 rounded-pill shadow-sm px-3 py-2">
+                            <i class="bi bi-file-earmark-pdf-fill fs-6"></i>
+                            <span class="fw-semibold">Export PDF</span>
+                        </a>
+                    </div>
+                @endif
+            </form>
+        </div>
+    </div>
+
+    <style>
+        .filter-bar label i {
+            font-size: 1.1rem;
+        }
+
+        @media (max-width: 768px) {
+            .filter-bar form {
+                flex-direction: column !important;
+                align-items: stretch !important;
+            }
+
+            .filter-bar .input-group {
+                width: 100% !important;
+            }
+
+            .filter-bar .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+    @endif
+
+
     {{-- ---------------- DATA TABLE ---------------- --}}
     <div class="card shadow-sm border-0">
         <div class="card-body p-0">
@@ -144,6 +192,7 @@
                                 <th>Date</th>
                                 <th>Purpose</th>
                                 <th>Status</th>
+                                <th>Action</th>
                             </tr>
                         @elseif(in_array($report, ['active-tenants', 'pending-tenants', 'rejected-tenants']))
                             <tr>
@@ -171,7 +220,7 @@
                                 <th>Urgency</th>
                                 <th>Supposed Date</th>
                                 <th>Status</th>
-                                <th class="text-center">Actions</th>
+                                <th>Issue</th>
                             </tr>
                         @endif
                     </thead>
@@ -194,6 +243,18 @@
                                                 <option value="Accepted" {{ $item->pay_status === 'Accepted' ? 'selected' : '' }}>Accepted</option>
                                             </select>
                                         </form>
+                                    </td>
+                                    <td>
+                                        @if($item->proof)
+                                            <button type="button" class="btn btn-sm btn-outline-primary view-image-btn"
+                                                    data-bs-toggle="modal" data-bs-target="#viewImageModal"
+                                                    data-image="{{ asset('storage/' . $item->proof) }}"
+                                                    data-title="Payment Proof">
+                                                <i class="bi bi-eye"></i> View Proof
+                                            </button>
+                                        @else
+                                            <span class="text-muted fst-italic">No Proof</span>
+                                        @endif
                                     </td>
                                 </tr>
 
@@ -226,14 +287,16 @@
                                 <td>{{ $lease?->lea_terms ?? 'N/A' }}</td>
                             </tr>
 
-
-                            {{-- MAINTENANCE --}}
+                            <!-- MAINTENANCE -->
                             @elseif($report === 'maintenance-requests')
                                 <tr>
                                     <td>{{ $item->tenant->name ?? 'N/A' }}</td>
                                     <td>{{ $item->description }}</td>
                                     <td>
-                                        <span class="badge bg-{{ $item->urgency === 'high' ? 'danger' : ($item->urgency === 'mid' ? 'warning text-dark' : 'secondary') }}">
+                                        <span class="badge bg-{{
+                                            $item->urgency === 'high' ? 'danger' :
+                                            ($item->urgency === 'mid' ? 'warning text-dark' : 'secondary')
+                                        }}">
                                             {{ ucfirst($item->urgency) }}
                                         </span>
                                     </td>
@@ -242,18 +305,33 @@
                                         <form action="{{ route('manager.requests.updateStatus', $item->id) }}" method="POST">
                                             @csrf
                                             @method('PATCH')
-                                            <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
+                                            <select name="status" class="form-select form-select-sm rounded-pill"
+                                                onchange="this.form.submit()"
+                                                {{ $item->status === 'Cancelled' ? 'disabled' : '' }}>
                                                 <option value="Pending" {{ $item->status === 'Pending' ? 'selected' : '' }}>Pending</option>
                                                 <option value="In Progress" {{ $item->status === 'In Progress' ? 'selected' : '' }}>In Progress</option>
                                                 <option value="Completed" {{ $item->status === 'Completed' ? 'selected' : '' }}>Completed</option>
+                                                <option value="Cancelled" {{ $item->status === 'Cancelled' ? 'selected' : '' }}>Cancelled</option>
                                             </select>
                                         </form>
                                     </td>
                                     <td class="text-center">
-                                        <a href="{{ route('manager.requests.show', $item->id) }}" class="btn btn-sm btn-outline-info">View</a>
+                                        @if(!empty($item->issue_image) && file_exists(storage_path('app/public/' . $item->issue_image)))
+                                            <button type="button"
+                                                    class="btn btn-sm btn-outline-primary view-image-btn"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#viewImageModal"
+                                                    data-image="{{ asset('storage/' . $item->issue_image) }}">
+                                                <i class="bi bi-image"></i> View
+                                            </button>
+                                        @else
+                                            <span class="text-muted fst-italic">No Image</span>
+                                        @endif
                                     </td>
                                 </tr>
+
                             @endif
+
                         @empty
                             <tr>
                                 <td colspan="100%" class="text-center text-muted py-3">No records found</td>
@@ -264,10 +342,132 @@
             </div>
         </div>
 
-        {{-- PAGINATION --}}
-        <div class="card-footer bg-light d-flex justify-content-center">
-            {{ $data->appends(request()->query())->links() }}
+        {{-- PAGINATION SECTION --}}
+        @if ($data->hasPages())
+        <div class="card-footer bg-white border-0 py-3">
+            <div class="d-flex justify-content-center">
+                <nav aria-label="Page navigation">
+                    <ul class="pagination pagination-rounded shadow-sm mb-0">
+
+                        {{-- Previous Page Link --}}
+                        @if ($data->onFirstPage())
+                            <li class="page-item disabled">
+                                <span class="page-link bg-light text-secondary border-0">
+                                    <i class="bi bi-chevron-left"></i>
+                                </span>
+                            </li>
+                        @else
+                            <li class="page-item">
+                                <a href="{{ $data->previousPageUrl() }}" class="page-link border-0 text-primary">
+                                    <i class="bi bi-chevron-left"></i>
+                                </a>
+                            </li>
+                        @endif
+
+                        {{-- Pagination Elements --}}
+                        @foreach ($data->getUrlRange(1, $data->lastPage()) as $page => $url)
+                            <li class="page-item {{ $page == $data->currentPage() ? 'active' : '' }}">
+                                <a href="{{ $url }}"
+                                    class="page-link border-0 {{ $page == $data->currentPage() ? 'bg-primary text-white shadow-sm' : 'text-dark bg-light' }}">
+                                    {{ $page }}
+                                </a>
+                            </li>
+                        @endforeach
+
+                        {{-- Next Page Link --}}
+                        @if ($data->hasMorePages())
+                            <li class="page-item">
+                                <a href="{{ $data->nextPageUrl() }}" class="page-link border-0 text-primary">
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+                        @else
+                            <li class="page-item disabled">
+                                <span class="page-link bg-light text-secondary border-0">
+                                    <i class="bi bi-chevron-right"></i>
+                                </span>
+                            </li>
+                        @endif
+
+                    </ul>
+                </nav>
+            </div>
+        </div>
+        @endif
+
+        {{-- PAGINATION STYLES --}}
+        @push('styles')
+        <style>
+            .pagination-rounded .page-item .page-link {
+                border-radius: 50% !important;
+                width: 38px;
+                height: 38px;
+                text-align: center;
+                line-height: 36px;
+                font-weight: 500;
+                transition: all 0.2s ease-in-out;
+            }
+
+            .pagination-rounded .page-item.active .page-link {
+                background-color: #0d6efd !important;
+                color: #fff !important;
+                box-shadow: 0 3px 6px rgba(13, 110, 253, 0.3);
+            }
+
+            .pagination-rounded .page-item .page-link:hover {
+                background-color: #e9f3ff;
+                color: #0d6efd;
+            }
+
+            .pagination-rounded .page-item.disabled .page-link {
+                opacity: 0.5;
+                cursor: not-allowed;
+            }
+        </style>
+        @endpush
+
+    </div>
+</div>
+
+<!-- Reusable Image Modal -->
+<div class="modal fade" id="viewImageModal" tabindex="-1" aria-labelledby="viewImageModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header text-black">
+                <h5 class="modal-title" id="viewImageModalLabel">Issue Image</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="modalIssueImage" src="" alt="Issue Image" class="img-fluid rounded shadow-sm">
+            </div>
         </div>
     </div>
 </div>
+
 @endsection
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const modalImage = document.getElementById('modalIssueImage');
+    const imageModal = document.getElementById('viewImageModal');
+    const modalTitle = document.getElementById('viewImageModalLabel');  // Access the modal title element
+
+    // Listen for clicks on buttons with class .view-image-btn (handles maintenance issue images and payment proofs)
+    document.querySelectorAll('.view-image-btn').forEach(button => {
+        button.addEventListener('click', function () {
+            const imageUrl = this.getAttribute('data-image');
+            const title = this.getAttribute('data-title') || 'Issue Image';  // Defaults to 'Issue Image' for maintenance, uses 'Payment Proof' for payments
+            modalImage.src = imageUrl;
+            modalTitle.textContent = title;  // Dynamically sets the modal title
+        });
+    });
+
+    // Clear image and reset title when modal closes (prevents flashing old images/titles)
+    imageModal.addEventListener('hidden.bs.modal', function () {
+        modalImage.src = '';
+        modalTitle.textContent = 'Issue Image';  // Resets to default title
+    });
+});
+</script>
+
+

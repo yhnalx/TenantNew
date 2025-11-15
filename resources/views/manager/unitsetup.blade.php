@@ -6,96 +6,219 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
 <style>
-    /* Card & Layout */
-    .card { border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
-    .card-header { font-weight: 600; font-size: 1.1rem; }
+  /* Body & container */
+  .container {
+    max-width: 1200px;
+  }
+  body {
+    background-color: #f6f7fb;
+  }
 
-    /* Table Styling */
-    .table thead th { text-align: center; vertical-align: middle; }
-    .table-hover tbody tr:hover { background: #f9fafb; }
-    .table td, .table th { vertical-align: middle; }
+  /* Heading */
+  h2 {
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 1rem;
+  }
 
-    /* Badges */
-    .badge { font-size: 0.9rem; padding: 0.5em 1em; border-radius: 12px; }
+  /* Card style */
+  .card {
+    background: #fff;
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgb(0 0 0 / 0.1);
+  }
 
-    /* Buttons */
-    .btn-sm { border-radius: 8px; }
-    .btn-primary, .btn-warning, .btn-danger { box-shadow: 0 3px 10px rgba(0,0,0,0.1); }
+  /* Card header */
+  .card-header {
+    border-bottom: none;
+    background: transparent;
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: #222;
+    padding: 1rem 1.5rem;
+  }
 
-    /* Modals */
-    .modal-content { border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.2); }
-    .modal-header { border-bottom: none; background: #0d6efd; color: #fff; border-top-left-radius: 12px; border-top-right-radius: 12px; }
-    .modal-header.bg-danger { background: #dc3545; }
-    .modal-footer { border-top: none; }
+  /* Buttons */
+  .btn-add-unit {
+    background-color: #b8793e;
+    color: white;
+    border-radius: 8px;
+    padding: 10px 18px;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgb(184 121 62 / 0.5);
+    transition: background-color 0.2s ease;
+  }
+  .btn-add-unit:hover {
+    background-color: #a5642f;
+    color: #fff;
+  }
+
+  /* Table styles */
+  table {
+    border-collapse: separate;
+    border-spacing: 0 10px;
+    font-size: 0.9rem;
+  }
+  thead tr {
+    background-color: transparent;
+  }
+  thead th {
+    color: #666;
+    font-weight: 600;
+    text-align: center;
+    padding: 12px 18px;
+  }
+  tbody tr {
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    transition: background-color 0.15s ease;
+  }
+  tbody tr:hover {
+    background-color: #f4f7ff;
+  }
+  tbody td {
+    padding: 14px 18px;
+    vertical-align: middle;
+  }
+  tbody td span.fw-semibold {
+    font-weight: 600;
+    color: #222;
+  }
+  tbody td span.fw-bold {
+    font-weight: 700;
+    color: #222;
+  }
+  tbody td span.text-success {
+    color: #2e7d32;
+    font-weight: 600;
+  }
+
+  /* Status badges */
+  .badge {
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    padding: 6px 14px;
+    display: inline-block;
+  }
+  .badge.bg-success {
+    background-color: #d1e7dd;
+    color: #0f5132;
+  }
+  .badge.bg-danger {
+    background-color: #f8d7da;
+    color: #842029;
+  }
+
+  /* Actions buttons */
+  .btn-sm {
+    padding: 5px 8px;
+    font-size: 1rem;
+    border-radius: 6px;
+  }
+  .btn-warning {
+    background-color: #f9a825; /* amber accent */
+    border: none;
+    color: white;
+    box-shadow: 0 2px 8px rgb(249 168 37 / 0.5);
+  }
+  .btn-warning:hover {
+    background-color: #c17900;
+  }
+  .btn-danger {
+    box-shadow: 0 2px 8px rgb(220 53 69 / 0.5);
+  }
+
+  /* Modal styling stays mostly same, except minor tweaks for rounding if needed */
+  .modal-content {
+    border-radius: 15px;
+    box-shadow: 0 8px 25px rgba(0,0,0,.2);
+  }
+  .modal-header {
+    border-bottom: none;
+    background-color: #b8793e;
+    color: #fff;
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+  }
+  .modal-header.bg-danger {
+    background-color: #dc3545;
+  }
+  .modal-footer {
+    border-top: none;
+  }
+  .btn-light.border {
+    border-radius: 8px;
+    color: #5a3e2b;
+  }
+  .btn-primary, .btn-warning, .btn-danger {
+    border-radius: 8px;
+  }
 </style>
 @endpush
 
+
 @section('content')
 <div class="container mt-4">
-    <h2 class="mb-4 fw-bold text-primary">🏠 Unit Management</h2>
+    <h2 class="mb-4 fw-bold">Unit Management</h2>
 
     <!-- Add Unit Button -->
-    <button type="button" class="btn btn-primary mb-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#createUnitModal">
-        <i class="bi bi-plus-circle"></i> Add New Unit
-    </button>
+  <button type="button" class="btn btn-add-unit mb-3" data-bs-toggle="modal" data-bs-target="#createUnitModal">
+    <i class="bi bi-plus-circle"></i> Add New Unit
+  </button>
 
-    <!-- Units Table -->
-    <div class="card">
-        <div class="card-header bg-dark text-white">All Units</div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle text-center">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>ID</th>
-                            <th>Type</th>
-                            <th>Room No</th>
-                            <th>Room Price</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($units as $unit)
-                        <tr>
-                            <td>{{ $unit->id }}</td>
-                            <td><span class="fw-semibold">{{ $unit->type }}</span></td>
-                            <td><span class="fw-bold">{{ $unit->room_no }}</span></td>
-                            <td><span class="text-success fw-semibold">₱{{ number_format($unit->room_price, 2) }}</span></td>
-                            <td>
-                                <span class="badge {{ $unit->status == 'vacant' ? 'bg-success' : 'bg-danger' }}">
-                                    {{ ucfirst($unit->status) }}
-                                </span>
-                            </td>
-                            <td>
-                                <!-- Edit Button -->
-                                <button type="button" class="btn btn-sm btn-warning me-1"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#editUnitModal{{ $unit->id }}"
-                                    title="Edit Unit">
-                                    <i class="bi bi-pencil-square"></i>
-                                </button>
-
-                                <!-- Delete Button -->
-                                <button type="button" class="btn btn-sm btn-danger"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#deleteUnitModal{{ $unit->id }}"
-                                    title="Delete Unit">
-                                    <i class="bi bi-trash3-fill"></i>
-                                </button>
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="6" class="text-muted text-center">No units available</td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-        </div>
+  <div class="card">
+    <div class="card-header">All Units</div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table mb-0">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Type</th>
+              <th>Room No</th>
+              <th>Room Price</th>
+              <th>Capacity</th>
+              <th>Status</th>
+              <th class="text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @forelse($units as $unit)
+            <tr>
+              <td class="text-center">{{ $unit->id }}</td>
+              <td><span class="fw-semibold">{{ $unit->type }}</span></td>
+              <td><span class="fw-bold">{{ $unit->room_no }}</span></td>
+              <td><span class="text-success fw-semibold">₱{{ number_format($unit->room_price, 2) }}</span></td>
+              <td class="text-center">{{ $unit->capacity }}</td>
+              <td class="text-center">
+                <span class="badge {{ $unit->status == 'vacant' ? 'bg-success' : 'bg-danger' }}">
+                  {{ ucfirst($unit->status) }}
+                </span>
+              </td>
+              <td class="text-center">
+                <button type="button" class="btn btn-sm btn-warning me-1" data-bs-toggle="modal" data-bs-target="#editUnitModal{{ $unit->id }}" title="Edit Unit">
+                  <i class="bi bi-pencil-square"></i>
+                </button>
+                <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteUnitModal{{ $unit->id }}" title="Delete Unit">
+                  <i class="bi bi-trash3-fill"></i>
+                </button>
+              </td>
+            </tr>
+            @empty
+            <tr>
+              <td colspan="7" class="text-center text-muted">No units available</td>
+            </tr>
+            @endforelse
+          </tbody>
+        </table>
+      </div>
     </div>
+  </div>
 </div>
+
 
 <!-- CREATE modal -->
 <div class="modal fade" id="createUnitModal" tabindex="-1" aria-labelledby="createUnitModalLabel" aria-hidden="true">
@@ -112,7 +235,7 @@
                         <label class="form-label">Type</label>
                         <select name="type" class="form-select" required>
                             <option value="">Select Type</option>
-                            @foreach(['Studio','1-Bedroom','2-Bedroom', 'Commercial'] as $type)
+                            @foreach(['Studio','1-Bedroom','2-Bedroom', 'Commercial', 'Bed-Spacer'] as $type)
                                 <option value="{{ $type }}">{{ $type }}</option>
                             @endforeach
                         </select>
@@ -126,6 +249,10 @@
                         <input type="number" step="0.01" name="room_price" class="form-control" required>
                     </div>
                     <div class="mb-3">
+                        <label class="form-label">Capacity</label>
+                        <input type="number" name="capacity" class="form-control" min="1" required>
+                    </div>
+                    <div class="mb-3">
                         <label class="form-label">Status</label>
                         <select name="status" class="form-select">
                             <option value="vacant">Vacant</option>
@@ -134,9 +261,17 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-light" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Save Unit</button>
-                </div>
+    <button class="btn btn-light border" data-bs-dismiss="modal"
+            style="border-radius: 8px; color: #5a3e2b;">
+        Close
+    </button>
+    <button type="submit"
+            class="btn text-white"
+            style="background-color: #b8793e; border: none; border-radius: 8px;">
+        Save Unit
+    </button>
+</div>
+
             </div>
         </form>
     </div>
@@ -174,6 +309,10 @@
                             <input type="number" step="0.01" name="room_price" class="form-control" value="{{ $unit->room_price }}" required>
                         </div>
                         <div class="mb-3">
+                            <label class="form-label">Capacity</label>
+                            <input type="number" name="capacity" class="form-control" min="1" required>
+                        </div>
+                        <div class="mb-3">
                             <label class="form-label">Status</label>
                             <select name="status" class="form-select">
                                 <option value="vacant" {{ $unit->status == 'vacant' ? 'selected' : '' }}>Vacant</option>
@@ -183,7 +322,9 @@
                     </div>
                     <div class="modal-footer">
                         <button class="btn btn-light" data-bs-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-warning">Update</button>
+                        <button type="submit" class="btn text-white" style="background-color: #b8793e; border: none; border-radius: 8px;">
+                           Update
+                            </button>
                     </div>
                 </div>
             </form>
