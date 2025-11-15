@@ -3,14 +3,14 @@
 @section('title', 'Welcome')
 
 @section('content')
-<body style="background-color: #ff6b092c; margin: 0; padding: 0;">
-    <div class="container py-5 text-center">
 <div class="container py-5 text-center">
+
+
 
     <!-- Header Section -->
     <div class="mb-5">
-        <h1 class="fw-bold display-5 text-dark">
-            Welcome to <span class="text-dark">Pinikitan Rental</span>
+        <h1 class="fw-bold display-5 text-primary">
+            Welcome to <span class="text-gradient">Pinikitan Rental</span>
         </h1>
         <p class="lead text-muted">
             Find your next home with ease — we currently have
@@ -26,7 +26,7 @@
 
         @foreach($groupedUnits as $type => $typeUnits)
             <div class="col-md-6 col-lg-4">
-                <div class="card h-100 shadow-sm border-0 rounded-4 hover-card unit-card"
+                <div class="card h-100 shadow-sm border-0 rounded-4 hover-card glass-card"
                      data-bs-toggle="modal"
                      data-bs-target="#unitModal"
                      data-type="{{ $type }}"
@@ -56,7 +56,7 @@
 
     <!-- About Us Section -->
     <section class="py-5 text-center">
-        <h2 class="fw-bold text-dark mb-4">About Us</h2>
+        <h2 class="fw-bold text-primary mb-4">About Us</h2>
         <p class="lead text-muted mx-auto" style="max-width: 700px;">
             Our apartment complex started in <strong>2015</strong> with the goal of providing safe,
             affordable, and modern living spaces for students and working professionals.
@@ -67,7 +67,7 @@
 
     <!-- Contact Section -->
     <section class="py-5 bg-light rounded-4 shadow-sm">
-        <h2 class="fw-bold text-dark mb-4">📍 Contact Us</h2>
+        <h2 class="fw-bold text-primary mb-4">📍 Contact Us</h2>
         <div class="row g-4 justify-content-center">
             <div class="col-md-4">
                 <div class="p-4 bg-white rounded-4 shadow-sm h-100">
@@ -92,7 +92,7 @@
 
     <!-- Map Embed -->
     <section class="py-5">
-        <h2 class="fw-bold text-dark mb-4">📌 Find Us Here</h2>
+        <h2 class="fw-bold text-primary mb-4">📌 Find Us Here</h2>
         <div class="ratio ratio-16x9 rounded-4 shadow-sm overflow-hidden">
             <iframe
                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d829.5969257428177!2d124.65405466128895!3d8.475028046399832!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x32fff2ce448339c1%3A0x639be33dade6bf70!2sR.A.%20VITORILLO%20LAW%20OFFICE%20AND%20ASSOCIATES!5e0!3m2!1sen!2sph!4v1761789546488!5m2!1sen!2sph"
@@ -100,18 +100,49 @@
         </div>
     </section>
 
+</div>
+
+<style>
+    .glass-card {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(12px);
+        border-radius: 1rem;
+        box-shadow: 0 6px 25px rgba(49, 7, 236, 0.28);
+    }
+    .btn-gradient {
+        background: linear-gradient(135deg, #01017c, #2d3b9a);
+        color: #fff;
+        border-radius: 50px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    .btn-gradient:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(1,1,124,0.25);
+    }
+    .text-gradient {
+        background: linear-gradient(135deg, #01017c, #2d3b9a);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+</style>
+
 <!-- Unit Modal (Reusable) -->
 <div class="modal fade" id="unitModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content rounded-4 border-0 shadow-lg">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title" id="unitModalTitle"></h5>
+        <div class="modal-content rounded-4 border-0 shadow-lg glass-card">
+
+            <!-- Modal Header -->
+            <div class="modal-header bg-primary text-white" style="background: linear-gradient(135deg, #01017c, #2d3b9a);">
+                <h5 class="modal-title fw-bold" id="unitModalTitle">Unit Details</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
 
+            <!-- Modal Body -->
             <div class="modal-body p-4">
                 <div class="row g-4">
-                    <!-- LEFT: Image + Unit Info -->
+
+                    <!-- LEFT: Unit Image + Info -->
                     <div class="col-lg-5 text-center">
                         <img id="unitModalImg" src="" alt="Unit Image"
                              class="img-fluid rounded-4 shadow-sm mb-3"
@@ -132,10 +163,11 @@
 
                     <!-- RIGHT: Registration Form -->
                     <div class="col-lg-7">
-                        <h5 class="mb-3 fw-bold">Tenant Registration & Application</h5>
+                        <h5 class="mb-3 fw-bold text-primary">Tenant Registration & Application</h5>
                         <form method="POST" action="{{ route('register.submit') }}" enctype="multipart/form-data">
                             @csrf
                             <div class="row g-3">
+
                                 <!-- FIRST NAME & LAST NAME -->
                                 <div class="col-md-6">
                                     <label class="form-label">First Name</label>
@@ -182,7 +214,7 @@
                                     <input type="text" name="unit_type" id="unitModalType" class="form-control" readonly>
                                 </div>
 
-                                <!-- ✅ FILTERED ROOM SELECTION -->
+                                <!-- FILTERED ROOM SELECTION -->
                                 <div class="col-md-12">
                                     <label class="form-label">Select Room</label>
                                     <select name="unit_id" id="unit_id" class="form-select" required>
@@ -250,15 +282,18 @@
                                     <label class="form-label">1x1 ID Picture</label>
                                     <input type="file" name="id_picture" class="form-control" accept="image/*" required>
                                 </div>
+
                             </div>
 
                             <div class="mt-4 text-end">
-                                <button type="submit" class="btn btn-success px-4">Submit Application</button>
+                                <button type="submit" class="btn btn-gradient px-4">Submit Application</button>
                             </div>
                         </form>
                     </div>
+
                 </div>
             </div>
+
         </div>
     </div>
 </div>
@@ -274,19 +309,48 @@
     </div>
 </div>
 
+
+<!-- Additional Styles -->
 @push('styles')
 <style>
-.hover-card {
-    transition: transform 0.25s ease, box-shadow 0.25s ease;
-    cursor: pointer;
-}
-.hover-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 12px 25px rgba(0,0,0,0.15);
-}
-h4.card-title { font-size: 1.5rem; }
-ul li { font-size: 1.05rem; }
-.badge { font-size: 0.9rem; padding: 0.4em 0.75em; }
+    /* Card Hover Effect */
+    .hover-card {
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+        cursor: pointer;
+    }
+    .hover-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 16px 30px rgba(0,0,0,0.15);
+    }
+
+    /* Glass Card */
+    .glass-card {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(12px);
+        border-radius: 1rem;
+        box-shadow: 0 6px 25px rgba(49, 7, 236, 0.28);
+    }
+
+    /* Gradient Text */
+    .text-gradient {
+        background: linear-gradient(135deg, #01017c, #2d3b9a);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    /* Buttons */
+    .btn-gradient {
+        background: linear-gradient(135deg, #01017c, #2d3b9a);
+        color: #fff;
+        border-radius: 50px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-gradient:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(1,1,124,0.25);
+    }
 </style>
 @endpush
 
@@ -360,4 +424,6 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 @endpush
-@endsection
+
+
+@endSection

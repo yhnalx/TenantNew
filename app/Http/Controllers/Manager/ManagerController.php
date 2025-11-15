@@ -457,6 +457,100 @@ class ManagerController extends Controller
     //     return redirect()->back()->with('success', 'Tenant approved successfully. Lease and financial info initialized, and unit marked as occupied.');
     // }
 
+    // public function approve($id)
+    // {
+    //     $user = User::find($id);
+
+    //     if (!$user || $user->role !== 'tenant') {
+    //         return redirect()->back()->with('error', 'Invalid tenant.');
+    //     }
+
+    //     $tenantApp = $user->tenantApplication;
+
+    //     if (!$tenantApp) {
+    //         return redirect()->back()->with('error', 'Tenant application not found.');
+    //     }
+
+    //     // Approve tenant
+    //     $user->status = 'approved';
+    //     $user->rejection_reason = null;
+    //     $user->save();
+
+    //     // Lease period
+    //     $startDate = Carbon::today();
+    //     $endDate   = $startDate->copy()->addYear();
+
+    //     $leaseTermText = sprintf(
+    //         '1 Year Lease (%s – %s)',
+    //         $startDate->format('M d, Y'),
+    //         $endDate->format('M d, Y')
+    //     );
+
+    //     // Assign unit
+    //     $unit = Unit::find($tenantApp->unit_id);
+    //     if (!$unit) {
+    //         return redirect()->back()->with('error', 'Selected unit not found.');
+    //     }
+
+    //     $unit->status = 'occupied';
+    //     $unit->save();
+
+    //     // Create Lease
+    //     $lease = Lease::create([
+    //         'user_id'        => $user->id,
+    //         'unit_id'        => $unit->id,
+    //         'lea_start_date' => $startDate,
+    //         'lea_end_date'   => $endDate,
+    //         'lea_status'     => 'active',
+    //         'room_no'        => $unit->room_no,
+    //         'lea_terms'      => $leaseTermText,
+    //     ]);
+
+    //     // Determine rent and deposit
+    //     $unitType = $tenantApp->unit_type ?? 'Studio';
+    //     $monthlyRent = match($unitType) {
+    //         'Studio' => 7500,
+    //         'One Bedroom' => 10000,
+    //         'Two Bedroom' => 12000,
+    //         default => 7500,
+    //     };
+    //     $depositAmount = $monthlyRent * 2;
+    //     $monthlyUtilities = 0;
+
+    //     // Update tenant financial info
+    //     $user->update([
+    //         'rent_amount'     => $monthlyRent,
+    //         'utility_amount'  => $monthlyUtilities,
+    //         'deposit_amount'  => $depositAmount,
+    //         'rent_balance'    => $depositAmount,
+    //         'utility_balance' => $monthlyUtilities,
+    //     ]);
+
+    //     Notification::create([
+    //         'user_id' => $user->id,
+    //         'title' => 'Application Approved',
+    //         'message' => 'Congratulations! Your tenant application has been approved.',
+    //     ]);
+
+    //     // ✅ Send Approval Email
+    //     try {
+    //         Mail::to($user->email)->send(new TenantApprovedMail($user, $lease));
+    //     } catch (\Exception $e) {
+    //         Log::error("❌ Failed to send tenant approval email to {$user->email}: {$e->getMessage()}");
+    //     }
+
+    //     // ✅ Send Approval SMS
+    //     $contactNumber = $this->normalizePhoneNumber($tenantApp->contact_number);
+
+    //     if ($contactNumber) {
+    //         $approvalMessage = "Hello {$user->name}, your application has been APPROVED! "
+    //             . "Your lease for room {$unit->room_no} starts {$startDate->format('M d, Y')}.";
+    //         $this->smsService->send($contactNumber, $approvalMessage);
+    //     }
+
+    //     return redirect()->back()->with('success', 'Tenant approved successfully. Lease and financial info initialized, and unit marked as occupied.');
+    // }
+
     public function approve($id)
     {
         $user = User::find($id);
@@ -492,7 +586,18 @@ class ManagerController extends Controller
             return redirect()->back()->with('error', 'Selected unit not found.');
         }
 
-        $unit->status = 'occupied';
+        // Bed-Spacer logic
+        if ($unit->type === 'Bed-Spacer') {
+            $unit->no_of_occupants = ($unit->no_of_occupants ?? 0) + 1;
+
+            // Only mark as 'occupied' if full
+            if ($unit->no_of_occupants >= $unit->capacity) {
+                $unit->status = 'occupied';
+            }
+        } else {
+            // Other unit types are fully occupied
+            $unit->status = 'occupied';
+        }
         $unit->save();
 
         // Create Lease
@@ -509,10 +614,11 @@ class ManagerController extends Controller
         // Determine rent and deposit
         $unitType = $tenantApp->unit_type ?? 'Studio';
         $monthlyRent = match($unitType) {
-            'Studio' => 7500,
-            'One Bedroom' => 10000,
-            'Two Bedroom' => 12000,
-            default => 7500,
+            'Studio' => $unit->room_price ?? 0,
+            'One Bedroom' => $unit->room_price ?? 0,
+            'Two Bedroom' => $unit->room_price ?? 0,
+            'Bed-Spacer' => $unit->room_price ?? 0,
+            default => 0,
         };
         $depositAmount = $monthlyRent * 2;
         $monthlyUtilities = 0;
@@ -526,20 +632,21 @@ class ManagerController extends Controller
             'utility_balance' => $monthlyUtilities,
         ]);
 
+        // Notification
         Notification::create([
             'user_id' => $user->id,
-            'title' => 'Application Approved',
+            'title'   => 'Application Approved',
             'message' => 'Congratulations! Your tenant application has been approved.',
         ]);
 
-        // ✅ Send Approval Email
+        // Send Approval Email
         try {
             Mail::to($user->email)->send(new TenantApprovedMail($user, $lease));
         } catch (\Exception $e) {
             Log::error("❌ Failed to send tenant approval email to {$user->email}: {$e->getMessage()}");
         }
 
-        // ✅ Send Approval SMS
+        // Send Approval SMS
         $contactNumber = $this->normalizePhoneNumber($tenantApp->contact_number);
 
         if ($contactNumber) {
@@ -548,7 +655,7 @@ class ManagerController extends Controller
             $this->smsService->send($contactNumber, $approvalMessage);
         }
 
-        return redirect()->back()->with('success', 'Tenant approved successfully. Lease and financial info initialized, and unit marked as occupied.');
+        return redirect()->back()->with('success', 'Tenant approved successfully. Lease and financial info initialized, and unit occupancy updated.');
     }
 
 

@@ -179,11 +179,19 @@
                         <select name="unit_id" id="unit_id" class="form-select" required>
                             <option value="">Select a room</option>
                             @foreach($availableUnits as $unit)
+                                @php
+                                    // For Bed-Spacer, show current occupancy / capacity
+                                    if ($unit->type === 'Bed-Spacer') {
+                                        $occupancyInfo = " ({$unit->no_of_occupants}/{$unit->capacity})";
+                                    } else {
+                                        $occupancyInfo = "";
+                                    }
+                                @endphp
                                 <option value="{{ $unit->id }}"
                                         data-type="{{ $unit->type }}"
                                         {{ $unit->status === 'occupied' ? 'disabled' : '' }}
                                         {{ old('unit_id') == $unit->id ? 'selected' : '' }}>
-                                    {{ $unit->room_no }} ({{ $unit->type }})
+                                    {{ $unit->room_no }} ({{ $unit->type }}{{ $occupancyInfo }})
                                     @if($unit->status === 'occupied') - Occupied @endif
                                 </option>
                             @endforeach
