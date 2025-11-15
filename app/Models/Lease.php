@@ -64,9 +64,4 @@ class Lease extends Model
     {
         return $this->hasMany(MaintenanceRequest::class, 'tenant_id', 'user_id');
     }
-
-    public function propertyApplication()
-    {
-        return $this->belongsTo(PropertyApplication::class, 'property_application_id');
-    }
 }

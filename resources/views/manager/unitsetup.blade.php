@@ -168,6 +168,9 @@
   <button type="button" class="btn btn-add-unit mb-3" data-bs-toggle="modal" data-bs-target="#createUnitModal">
     <i class="bi bi-plus-circle"></i> Add New Unit
   </button>
+  <button type="button" class="btn btn-primary mb-3 ms-2" data-bs-toggle="modal" data-bs-target="#leaseApplicationsModal">
+    <i class="bi bi-file-earmark-text"></i> View Lease Applications
+  </button>
 
   <div class="card">
     <div class="card-header">All Units</div>
@@ -219,7 +222,6 @@
   </div>
 </div>
 
-
 <!-- CREATE modal -->
 <div class="modal fade" id="createUnitModal" tabindex="-1" aria-labelledby="createUnitModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -230,6 +232,7 @@
                     <h5 class="modal-title"><i class="bi bi-plus-circle"></i> Add Unit</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
+
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label">Type</label>
@@ -354,8 +357,75 @@
             </form>
         </div>
     </div>
+
+
+<!-- Lease Applications Modal -->
+<div class="modal fade" id="leaseApplicationsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="bi bi-file-earmark-text"></i> Lease Applications</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                @if($pendingLeases->isEmpty())
+                    <div class="alert alert-info">No pending lease applications.</div>
+                @else
+                    <div class="table-responsive">
+                        <table class="table table-striped align-middle">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Tenant</th>
+                                    <th>Unit Type</th>
+                                    <th>Room No</th>
+                                    <th>Price</th>
+                                    <th>Start Date</th>
+                                    <th>End Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($pendingLeases as $lease)
+                                    <tr>
+                                        <td>{{ $lease->tenant->name }}</td>
+                                        <td>{{ $lease->unit->type }}</td>
+                                        <td>{{ $lease->unit->room_no }}</td>
+                                        <td>₱{{ number_format($lease->unit->room_price, 2) }}</td>
+                                        <td>{{ $lease->lea_start_date ?? 'TBD' }}</td>
+                                        <td>{{ $lease->lea_end_date ?? 'TBD' }}</td>
+                                        <td>
+                                            <!-- Approve button -->
+                                            <form action="{{ route('manager.approve-unit', ['user' => $lease->user_id, 'unit' => $lease->unit_id]) }}" method="POST" class="d-inline">
+                                                @csrf
+                                                <button type="submit" class="btn btn-success btn-sm"
+                                                    onclick="return confirm('Approve this application?')">
+                                                    Approve
+                                                </button>
+                                            </form>
+
+                                            <!-- Reject button -->
+                                            <form action="{{ route('manager.reject-unit', [$lease->tenant->id, $lease->unit->id]) }}" method="POST">
+                                                @csrf
+                                                <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-light border" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @endforeach
 @endsection
+
 
 @push('scripts')
 <script>
@@ -365,5 +435,46 @@ document.addEventListener('DOMContentLoaded', function () {
         new bootstrap.Tooltip(el);
     });
 });
+
+document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('approve-lease-btn')) {
+        const btn = e.target;
+        const leaseId = btn.dataset.id;
+
+        if (!confirm('Are you sure you want to approve this application?')) return;
+
+        btn.disabled = true;
+        btn.textContent = 'Approving...';
+
+        fetch(`/manager/lease/approve/${leaseId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.success);
+                // Remove the row dynamically
+                const row = document.getElementById(`lease-row-${leaseId}`);
+                if (row) row.remove();
+            } else if (data.error) {
+                alert(data.error);
+                btn.disabled = false;
+                btn.textContent = 'Approve';
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Something went wrong. Please try again.');
+            btn.disabled = false;
+            btn.textContent = 'Approve';
+        });
+    }
+});
+
 </script>
 @endpush

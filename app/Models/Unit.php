@@ -37,4 +37,9 @@ class Unit extends Model
         return $this->hasMany(MaintenanceRequest::class, 'unit_id');
     }
 
+    public function activeLease()
+    {
+        return $this->hasOne(Lease::class)->where('status', 'Active');
+    }
+
 }

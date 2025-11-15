@@ -159,4 +159,9 @@ class User extends Authenticatable
         return "{$this->first_name} {$this->last_name}";
     }
 
+    public function activeLeases()
+    {
+        return $this->hasMany(Lease::class)->where('status', 'Active');
+    }
+
 }

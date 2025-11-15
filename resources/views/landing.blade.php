@@ -103,6 +103,12 @@
 </div>
 
 <style>
+    /* .modal-backdrop.show:nth-of-type(2) {
+        z-index: 1056 !important;
+    }
+    #termsModal {
+        z-index: 1057 !important;
+    } */
     .glass-card {
         background: rgba(255, 255, 255, 0.85);
         backdrop-filter: blur(12px);
@@ -283,6 +289,16 @@
                                     <input type="file" name="id_picture" class="form-control" accept="image/*" required>
                                 </div>
 
+                                <div class="form-check d-flex justify-content-center align-items-center gap-2 mb-4 mt-4">
+                                    <input class="form-check-input" type="checkbox" name="terms" id="terms" required>
+                                        <label class="form-check-label mb-0" for="terms">
+                                                I have read and agree to the
+                                            <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal" class="text-decoration-underline">
+                                                Terms and Conditions
+                                            </a>.
+                                        </label>
+                                </div>
+
                             </div>
 
                             <div class="mt-4 text-end">
@@ -296,6 +312,24 @@
 
         </div>
     </div>
+</div>
+
+<!-- Terms Modal -->
+<div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="termsModalLabel">Terms and Conditions</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" style="height: 80vh;">
+        <iframe src="{{ asset('storage/assets/tenant_agreement.pdf') }}" width="100%" height="100%" style="border:none;"></iframe>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- Zoom Image Modal -->
@@ -356,6 +390,41 @@
 
 @push('scripts')
 <script>
+
+document.addEventListener('DOMContentLoaded', function () {
+    const termsModal = document.getElementById('termsModal');
+    const unitModal = document.getElementById('unitModal');
+
+    // When "Terms and Conditions" modal opens → hide the registration modal
+    termsModal.addEventListener('show.bs.modal', function () {
+        const modal = bootstrap.Modal.getInstance(unitModal);
+        if (modal) modal.hide();
+    });
+
+    // When closing Terms modal → reopen Registration modal
+    termsModal.addEventListener('hidden.bs.modal', function () {
+        const modal = new bootstrap.Modal(unitModal);
+        modal.show();
+    });
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+    const termsModal = document.getElementById('termsModal');
+    const unitModal = document.getElementById('unitModal');
+
+    // When "Terms and Conditions" modal opens → hide the registration modal
+    termsModal.addEventListener('show.bs.modal', function () {
+        const modal = bootstrap.Modal.getInstance(unitModal);
+        if (modal) modal.hide();
+    });
+
+    // When closing Terms modal → reopen Registration modal
+    termsModal.addEventListener('hidden.bs.modal', function () {
+        const modal = new bootstrap.Modal(unitModal);
+        modal.show();
+    });
+});
+
 document.addEventListener('DOMContentLoaded', function() {
     const unitModalEl = document.getElementById('unitModal');
     const zoomModalEl = document.getElementById('unitImageModal');

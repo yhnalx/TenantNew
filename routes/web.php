@@ -19,7 +19,9 @@ use App\Http\Controllers\Manager\UnitController;
 use App\Http\Controllers\Manager\UtilityController;
 use App\Http\Controllers\Tenant\LeaseController;
 use App\Http\Controllers\Tenant\NotificationController;
+use App\Http\Controllers\TenantLeaseController;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Mail;
 
 Route::get('/run-scheduler', function () {
     Artisan::call('schedule:run');
@@ -173,17 +175,26 @@ Route::middleware(['auth', 'manager'])->group(function () {
     // Units Management
     Route::get('/manager/units', [UnitController::class, 'index'])->name('manager.units.index');
     Route::post('/manager/units', [UnitController::class, 'store'])->name('manager.units.store');
+
+    // Units approval for additional units
+    Route::post('/manager/approve-unit/{user}/{unit}', [UnitController::class, 'approveAdditionalUnit'])
+    ->name('manager.approve-unit');
+
+    // Reject additional unit application
+    Route::post('/manager/reject-unit/{user}/{unit}', [UnitController::class, 'rejectAdditionalUnit'])
+        ->name('manager.reject-unit');
+
+
+
     Route::get('/manager/units/{unit}/edit', [UnitController::class, 'edit'])->name('manager.units.edit');
     Route::put('/manager/units/{unit}', [UnitController::class, 'update'])->name('manager.units.update');
     Route::delete('/manager/units/{unit}', [UnitController::class, 'destroy'])->name('manager.units.destroy');
-
     // Utility Manager
     Route::get('/manager/utilities', [App\Http\Controllers\Manager\UtilityController::class, 'index'])
         ->name('manager.utilities.index');
 
     Route::put('/manager/utilities/{id}', [UtilityController::class, 'updateUtilityBalance'])
         ->name('manager.utilities.update');
-
 });
 
 
@@ -223,5 +234,13 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/tenant/notifications', [NotificationController::class, 'index'])
     ->name('tenant.notifications');
 
-});
+    Route::get('/tenant/leases', [TenantLeaseController::class, 'index'])
+    ->name('tenant.leases')
+    ->middleware('auth');
 
+    Route::post('/tenant/leases/apply', [TenantLeaseController::class, 'store'])
+        ->name('tenant.leases.store')
+        ->middleware('auth');
+
+
+});

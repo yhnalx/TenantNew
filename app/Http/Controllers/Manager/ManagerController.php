@@ -615,8 +615,8 @@ class ManagerController extends Controller
         $unitType = $tenantApp->unit_type ?? 'Studio';
         $monthlyRent = match($unitType) {
             'Studio' => $unit->room_price ?? 0,
-            'One Bedroom' => $unit->room_price ?? 0,
-            'Two Bedroom' => $unit->room_price ?? 0,
+            '1-Bedroom' => $unit->room_price ?? 0,
+            '2-Bedroom' => $unit->room_price ?? 0,
             'Bed-Spacer' => $unit->room_price ?? 0,
             default => 0,
         };

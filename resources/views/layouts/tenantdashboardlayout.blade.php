@@ -1,6 +1,7 @@
 @php
 use App\Models\Payment;
 use App\Models\Notification;
+use App\Models\Lease;
 
 $hasPaidDeposit = Payment::where('tenant_id', auth()->id())
     ->whereRaw('LOWER(payment_for) = ?', ['deposit'])
@@ -9,6 +10,11 @@ $hasPaidDeposit = Payment::where('tenant_id', auth()->id())
 $hasUnreadNotifications = Notification::where('user_id', auth()->id())
     ->where('is_read', false)
     ->exists();
+
+$hasLease = Lease::where('user_id', auth()->id())
+    ->where('lea_status', 'Active')
+    ->exists();
+
 @endphp
 
 <!DOCTYPE html>
@@ -217,6 +223,23 @@ $hasUnreadNotifications = Notification::where('user_id', auth()->id())
                     <i class="bi bi-bell me-2"></i> Notifications
                 </a>
             </li>
+
+            @if($hasLease)
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('tenant.leases') ? 'active' : '' }}"
+                    href="{{ route('tenant.leases') }}">
+                        <i class="bi bi-door-open-fill me-2"></i> Lease Management
+                    </a>
+                </li>
+            @else
+                <li class="nav-item">
+                    <a class="nav-link disabled">
+                        <i class="bi bi-door-open-fill me-2"></i> Lease Management
+                    </a>
+                </li>
+            @endif
+
+
 
             <li class="nav-item mt-4">
                 <form action="{{ route('logout') }}" method="POST">
